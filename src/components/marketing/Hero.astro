@@ -1,11 +1,12 @@
 ---
 interface Props {
-  title: string;
   subtitle: string;
+  title: string;
 }
 
 const { title, subtitle } = Astro.props;
 ---
+
 <section class="hero-shell">
   <div>
     <p class="section-label">Browser-native image compression</p>
@@ -21,15 +22,24 @@ const { title, subtitle } = Astro.props;
     <ul class="hero-list">
       <li>
         <span class="hero-list-label">Private by default</span>
-        <p>Compression runs locally in the browser, so screenshots and exports never leave the device.</p>
+        <p>
+          Compression runs locally in the browser, so screenshots and exports
+          never leave the device.
+        </p>
       </li>
       <li>
         <span class="hero-list-label">Quiet workflow</span>
-        <p>Drop a batch, tune quality, preview the result, and ship a zip without switching tools.</p>
+        <p>
+          Drop a batch, tune quality, preview the result, and ship a zip without
+          switching tools.
+        </p>
       </li>
       <li>
         <span class="hero-list-label">Modern formats</span>
-        <p>Keep AVIF, WebP, JPEG, and PNG close at hand without treating the app like a novelty demo.</p>
+        <p>
+          Keep AVIF, WebP, JPEG, and PNG close at hand without treating the app
+          like a novelty demo.
+        </p>
       </li>
     </ul>
   </aside>

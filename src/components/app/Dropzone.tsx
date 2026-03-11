@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
-import { Icon } from '@iconify/react';
+import { Icon } from "@iconify/react";
+import { useEffect, useRef, useState } from "react";
 
 interface DropzoneProps {
-  onFiles: (files: File[]) => void;
   compact?: boolean;
+  onFiles: (files: File[]) => void;
 }
 
 export function Dropzone({ onFiles, compact = false }: DropzoneProps) {
@@ -13,46 +13,75 @@ export function Dropzone({ onFiles, compact = false }: DropzoneProps) {
   useEffect(() => {
     function handlePaste(event: ClipboardEvent) {
       const files = Array.from(event.clipboardData?.files ?? []);
-      if (files.length) onFiles(files);
+      if (files.length) {
+        onFiles(files);
+      }
     }
-    window.addEventListener('paste', handlePaste);
-    return () => window.removeEventListener('paste', handlePaste);
+
+    function handleKeydown(event: KeyboardEvent) {
+      const isModifierPressed = event.metaKey || event.ctrlKey;
+      const isEditable =
+        event.target instanceof HTMLElement &&
+        (event.target.isContentEditable ||
+          ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName));
+
+      if (isEditable || !isModifierPressed) {
+        return;
+      }
+
+      if (event.key.toLowerCase() === "o") {
+        event.preventDefault();
+        inputRef.current?.click();
+      }
+    }
+
+    window.addEventListener("paste", handlePaste);
+    window.addEventListener("keydown", handleKeydown);
+
+    return () => {
+      window.removeEventListener("paste", handlePaste);
+      window.removeEventListener("keydown", handleKeydown);
+    };
   }, [onFiles]);
 
   if (compact) {
     return (
       <button
-        type="button"
         className="add-more-btn"
+        data-dragging={isDragging}
         onClick={() => inputRef.current?.click()}
+        onDragLeave={(event) => {
+          event.preventDefault();
+          if (
+            event.currentTarget.contains(event.relatedTarget as Node | null)
+          ) {
+            return;
+          }
+          setIsDragging(false);
+        }}
         onDragOver={(event) => {
           event.preventDefault();
           setIsDragging(true);
-        }}
-        onDragLeave={(event) => {
-          event.preventDefault();
-          if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
-          setIsDragging(false);
         }}
         onDrop={(event) => {
           event.preventDefault();
           setIsDragging(false);
           onFiles(Array.from(event.dataTransfer.files));
         }}
-        data-dragging={isDragging}
+        type="button"
       >
         <Icon icon="hugeicons:add-01" width={15} />
         Add files
         <input
-          ref={inputRef}
-          type="file"
-          multiple
           accept="image/*"
           className="hidden"
+          multiple
           onChange={(event) => {
             onFiles(Array.from(event.target.files ?? []));
-            event.currentTarget.value = '';
+            event.currentTarget.value = "";
           }}
+          ref={inputRef}
+          type="file"
         />
       </button>
     );
@@ -60,50 +89,64 @@ export function Dropzone({ onFiles, compact = false }: DropzoneProps) {
 
   return (
     <section
+      className="dropzone-hero"
       data-dragging={isDragging}
+      onDragLeave={(event) => {
+        event.preventDefault();
+        if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          return;
+        }
+        setIsDragging(false);
+      }}
       onDragOver={(event) => {
         event.preventDefault();
         setIsDragging(true);
-      }}
-      onDragLeave={(event) => {
-        event.preventDefault();
-        if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
-        setIsDragging(false);
       }}
       onDrop={(event) => {
         event.preventDefault();
         setIsDragging(false);
         onFiles(Array.from(event.dataTransfer.files));
       }}
-      className="dropzone-hero"
     >
       <div className="dropzone-icon">
         <Icon icon="hugeicons:image-upload" width={56} />
       </div>
 
-      <h2 className="dropzone-title">Drop PNG or JPEG files here</h2>
+      <h2 className="dropzone-title">Drop images here</h2>
       <p className="dropzone-hint">or paste from clipboard</p>
 
-      <button type="button" onClick={() => inputRef.current?.click()} className="dropzone-select-btn">
+      <button
+        className="dropzone-select-btn"
+        onClick={() => inputRef.current?.click()}
+        type="button"
+      >
         <Icon icon="hugeicons:folder-open" width={16} />
         Select Files
+        <span className="shortcut-chip">
+          <Icon icon="hugeicons:command" width={15} />
+          <kbd>O</kbd>
+        </span>
       </button>
 
       <p className="dropzone-paste-hint">
-        <kbd>Ctrl+V</kbd> to paste
+        <span className="shortcut-chip">
+          <Icon icon="hugeicons:command" width={15} />
+          <kbd>V</kbd>
+        </span>{" "}
+        to paste
       </p>
 
       <input
-        ref={inputRef}
-        type="file"
-        multiple
         accept="image/*"
         className="hidden"
+        multiple
         onChange={(event) => {
           onFiles(Array.from(event.target.files ?? []));
-          event.currentTarget.value = '';
+          event.currentTarget.value = "";
           setIsDragging(false);
         }}
+        ref={inputRef}
+        type="file"
       />
     </section>
   );

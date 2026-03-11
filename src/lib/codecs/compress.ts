@@ -1,34 +1,37 @@
-import type { CompressionSettings, OutputFormat } from '../utils/types';
+import type { CompressionSettings, OutputFormat } from "../utils/types";
 
-export async function compressImageData(imageData: ImageData, settings: CompressionSettings): Promise<ArrayBuffer> {
+export async function compressImageData(
+  imageData: ImageData,
+  settings: CompressionSettings
+): Promise<ArrayBuffer> {
   const format: OutputFormat = settings.format;
 
-  if (format === 'webp') {
-    const { encode } = await import('@jsquash/webp');
+  if (format === "webp") {
+    const { encode } = await import("@jsquash/webp");
     return encode(imageData, {
       quality: settings.lossless ? 100 : settings.quality,
-      near_lossless: settings.lossless ? 100 : (settings.quality > 90 ? 100 : 0),
-      exact: 0
+      near_lossless: settings.lossless ? 100 : settings.quality > 90 ? 100 : 0,
+      exact: 0,
     });
   }
 
-  if (format === 'avif') {
-    const { encode } = await import('@jsquash/avif');
+  if (format === "avif") {
+    const { encode } = await import("@jsquash/avif");
     return encode(imageData, {
       quality: settings.lossless ? 100 : settings.quality,
-      speed: 7
+      speed: 7,
     });
   }
 
-  if (format === 'png') {
-    const { encode } = await import('@jsquash/png');
+  if (format === "png") {
+    const { encode } = await import("@jsquash/png");
     return encode(imageData);
   }
 
-  const { encode } = await import('@jsquash/jpeg');
+  const { encode } = await import("@jsquash/jpeg");
   return encode(imageData, {
-    quality: settings.lossless ? 100 : settings.quality,
+    quality: settings.quality,
     baseline: false,
-    optimize_coding: true
+    optimize_coding: true,
   });
 }

@@ -1,13 +1,14 @@
 ---
 interface Feature {
-  title: string;
   description: string;
+  title: string;
 }
 interface Props {
   features: Feature[];
 }
 const { features } = Astro.props;
 ---
+
 <section class="feature-grid">
   {features.map((feature, index) => (
     <article class:list={['feature-card surface-panel', (index === 0 || index === 4) && 'feature-card-wide']}>

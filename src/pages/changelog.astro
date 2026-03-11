@@ -1,23 +1,30 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import { getCollection, render } from 'astro:content';
+import { getCollection, render } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
 
-const entries = (await getCollection('changelog')).sort(
+const entries = (await getCollection("changelog")).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime()
 );
 const renderedEntries = await Promise.all(
   entries.map(async (entry) => ({
     ...entry,
-    Content: (await render(entry)).Content
+    Content: (await render(entry)).Content,
   }))
 );
 ---
-<BaseLayout title="Changelog — PixelPress" description="Product and release updates for PixelPress.">
+
+<BaseLayout
+  title="Changelog — PixelPress"
+  description="Product and release updates for PixelPress."
+>
   <section class="page-stack">
     <div class="page-copy">
       <p class="section-label">Release notes</p>
       <h1 class="page-title">Small improvements, documented clearly.</h1>
-      <p class="page-intro">A running log of what changed in the product, with an emphasis on stability, privacy, and workflow quality instead of feature noise.</p>
+      <p class="page-intro">
+        A running log of what changed in the product, with an emphasis on
+        stability, privacy, and workflow quality instead of feature noise.
+      </p>
     </div>
     <div class="timeline-list">
       {renderedEntries.map((entry) => (
