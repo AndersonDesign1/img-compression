@@ -7,10 +7,10 @@ import type {
   CompressionSettings,
   WorkerCompressResponse,
 } from "../../lib/utils/types";
-import { CompressionList } from "./CompressionList";
-import { Dropzone } from "./Dropzone";
-import { ToolbarControls } from "./PresetControls";
-import { PreviewPanel } from "./PreviewPanel";
+import { CompressionList } from "./compression-list";
+import { Dropzone } from "./dropzone";
+import { ToolbarControls } from "./preset-controls";
+import { PreviewPanel } from "./preview-panel";
 
 const defaultSettings: CompressionSettings = {
   format: "webp",

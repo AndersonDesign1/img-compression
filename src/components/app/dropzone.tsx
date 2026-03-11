@@ -88,53 +88,56 @@ export function Dropzone({ onFiles, compact = false }: DropzoneProps) {
   }
 
   return (
-    <section
-      className="dropzone-hero"
-      data-dragging={isDragging}
-      onDragLeave={(event) => {
-        event.preventDefault();
-        if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
-          return;
-        }
-        setIsDragging(false);
-      }}
-      onDragOver={(event) => {
-        event.preventDefault();
-        setIsDragging(true);
-      }}
-      onDrop={(event) => {
-        event.preventDefault();
-        setIsDragging(false);
-        onFiles(Array.from(event.dataTransfer.files));
-      }}
-    >
-      <div className="dropzone-icon">
-        <Icon icon="hugeicons:image-upload" width={56} />
-      </div>
-
-      <h2 className="dropzone-title">Drop images here</h2>
-      <p className="dropzone-hint">or paste from clipboard</p>
-
+    <>
       <button
-        className="dropzone-select-btn"
+        aria-label="Drop images here or press Enter to select files"
+        className="dropzone-hero"
+        data-dragging={isDragging}
         onClick={() => inputRef.current?.click()}
+        onDragLeave={(event) => {
+          event.preventDefault();
+          if (
+            event.currentTarget.contains(event.relatedTarget as Node | null)
+          ) {
+            return;
+          }
+          setIsDragging(false);
+        }}
+        onDragOver={(event) => {
+          event.preventDefault();
+          setIsDragging(true);
+        }}
+        onDrop={(event) => {
+          event.preventDefault();
+          setIsDragging(false);
+          onFiles(Array.from(event.dataTransfer.files));
+        }}
         type="button"
       >
-        <Icon icon="hugeicons:folder-open" width={16} />
-        Select Files
-        <span className="shortcut-chip">
-          <Icon icon="hugeicons:command" width={15} />
-          <kbd>O</kbd>
+        <span className="dropzone-icon">
+          <Icon icon="hugeicons:image-upload" width={56} />
+        </span>
+
+        <span className="dropzone-title">Drop images here</span>
+        <span className="dropzone-hint">or paste from clipboard</span>
+
+        <span className="dropzone-select-btn">
+          <Icon icon="hugeicons:folder-open" width={16} />
+          Select Files
+          <span className="shortcut-chip">
+            <Icon icon="hugeicons:command" width={15} />
+            <kbd>O</kbd>
+          </span>
+        </span>
+
+        <span className="dropzone-paste-hint">
+          <span className="shortcut-chip">
+            <Icon icon="hugeicons:command" width={15} />
+            <kbd>V</kbd>
+          </span>{" "}
+          to paste
         </span>
       </button>
-
-      <p className="dropzone-paste-hint">
-        <span className="shortcut-chip">
-          <Icon icon="hugeicons:command" width={15} />
-          <kbd>V</kbd>
-        </span>{" "}
-        to paste
-      </p>
 
       <input
         accept="image/*"
@@ -148,6 +151,6 @@ export function Dropzone({ onFiles, compact = false }: DropzoneProps) {
         ref={inputRef}
         type="file"
       />
-    </section>
+    </>
   );
 }

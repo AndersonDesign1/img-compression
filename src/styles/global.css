@@ -561,7 +561,8 @@ img {
   padding: 3rem 2rem;
   margin: 1rem;
   text-align: center;
-  cursor: default;
+  appearance: none;
+  cursor: pointer;
   background: transparent;
   border: 1px dashed var(--border);
   border-radius: 1.2rem;

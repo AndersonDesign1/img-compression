@@ -22,6 +22,24 @@ function postProgress(
   self.postMessage(message);
 }
 
+function mimeTypeForFormat(
+  format: WorkerCompressRequest["settings"]["format"]
+) {
+  if (format === "png") {
+    return "image/png";
+  }
+
+  if (format === "webp") {
+    return "image/webp";
+  }
+
+  if (format === "avif") {
+    return "image/avif";
+  }
+
+  return "image/jpeg";
+}
+
 async function fileToImageData(file: File): Promise<ImageData> {
   const bitmap = await createImageBitmap(file);
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
@@ -46,14 +64,7 @@ self.onmessage = async (event: MessageEvent<WorkerCompressRequest>) => {
     const bytesBuffer = await compressImageData(imageData, settings);
     const requestedExtension = outputExtension(settings.format);
     const outputName = buildOutputName(file.name, requestedExtension);
-    const mime =
-      settings.format === "png"
-        ? "image/png"
-        : settings.format === "webp"
-          ? "image/webp"
-          : settings.format === "avif"
-            ? "image/avif"
-            : "image/jpeg";
+    const mime = mimeTypeForFormat(settings.format);
     const output = new Blob([bytesBuffer], { type: mime });
     const message: WorkerCompressResponse = {
       id,

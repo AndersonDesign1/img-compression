@@ -8,9 +8,14 @@ export async function compressImageData(
 
   if (format === "webp") {
     const { encode } = await import("@jsquash/webp");
+    let nearLossless = 0;
+    if (settings.lossless || settings.quality > 90) {
+      nearLossless = 100;
+    }
+
     return encode(imageData, {
       quality: settings.lossless ? 100 : settings.quality,
-      near_lossless: settings.lossless ? 100 : settings.quality > 90 ? 100 : 0,
+      near_lossless: nearLossless,
       exact: 0,
     });
   }

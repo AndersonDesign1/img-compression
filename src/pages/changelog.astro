@@ -1,6 +1,6 @@
 ---
 import { getCollection, render } from "astro:content";
-import BaseLayout from "@/layouts/BaseLayout.astro";
+import BaseLayout from "@/layouts/base-layout.astro";
 
 const entries = (await getCollection("changelog")).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime()
@@ -28,7 +28,7 @@ const renderedEntries = await Promise.all(
     </div>
     <div class="timeline-list">
       {renderedEntries.map((entry) => (
-        <article class="timeline-entry surface-panel">
+        <article class="timeline-entry surface-panel" key={entry.id}>
           <p class="timeline-meta">{entry.data.version} · {entry.data.date.toISOString().slice(0, 10)}</p>
           <h2 class="timeline-title">{entry.data.summary}</h2>
           <div class="timeline-body">

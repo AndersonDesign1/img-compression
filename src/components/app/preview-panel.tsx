@@ -9,6 +9,7 @@ interface PreviewPanelProps {
 
 export function PreviewPanel({ job }: PreviewPanelProps) {
   const [view, setView] = useState<"original" | "compressed">("original");
+  const [previewSize, setPreviewSize] = useState({ height: 1, width: 1 });
   const originalUrl = useMemo(
     () => (job?.file ? URL.createObjectURL(job.file) : null),
     [job?.file]
@@ -17,6 +18,7 @@ export function PreviewPanel({ job }: PreviewPanelProps) {
     () => (job?.output ? URL.createObjectURL(job.output) : null),
     [job?.output]
   );
+  const showUrl = view === "compressed" && outputUrl ? outputUrl : originalUrl;
 
   useEffect(() => {
     return () => {
@@ -37,6 +39,25 @@ export function PreviewPanel({ job }: PreviewPanelProps) {
     }
   }, [job?.output]);
 
+  useEffect(() => {
+    if (!showUrl) {
+      return;
+    }
+
+    const image = new Image();
+    image.onload = () => {
+      setPreviewSize({
+        width: image.naturalWidth || 1,
+        height: image.naturalHeight || 1,
+      });
+    };
+    image.src = showUrl;
+
+    return () => {
+      image.onload = null;
+    };
+  }, [showUrl]);
+
   if (!job) {
     return (
       <div className="preview-main">
@@ -47,11 +68,9 @@ export function PreviewPanel({ job }: PreviewPanelProps) {
       </div>
     );
   }
-
   const ratio = job.output
     ? Math.round((1 - job.output.size / job.file.size) * 100)
     : null;
-  const showUrl = view === "compressed" && outputUrl ? outputUrl : originalUrl;
 
   return (
     <div className="preview-main">
@@ -102,7 +121,9 @@ export function PreviewPanel({ job }: PreviewPanelProps) {
         {showUrl ? (
           <img
             alt={`${view === "compressed" ? "Compressed" : "Original"} ${job.file.name}`}
+            height={previewSize.height}
             src={showUrl}
+            width={previewSize.width}
           />
         ) : (
           <div className="preview-empty">

@@ -50,16 +50,17 @@ const nav = [
         <nav class="site-nav" aria-label="Primary">
           {nav.map((item) => (
             <a
-              class="site-link"
-              href={item.href}
               aria-current={(item.href === '/'
                 ? currentPath === '/'
                 : currentPath === item.href)
                 ? 'page'
                 : undefined}
+              class="site-link"
               data-active={item.href === '/'
                 ? currentPath === '/'
                 : currentPath === item.href}
+              href={item.href}
+              key={item.href}
             >
               {item.label}
             </a>
