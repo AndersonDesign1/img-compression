@@ -6,8 +6,8 @@ export async function compressImageData(imageData: ImageData, settings: Compress
   if (format === 'webp') {
     const { encode } = await import('@jsquash/webp');
     return encode(imageData, {
-      quality: settings.quality,
-      near_lossless: settings.quality > 90 ? 100 : 0,
+      quality: settings.lossless ? 100 : settings.quality,
+      near_lossless: settings.lossless ? 100 : (settings.quality > 90 ? 100 : 0),
       exact: 0
     });
   }
@@ -15,7 +15,7 @@ export async function compressImageData(imageData: ImageData, settings: Compress
   if (format === 'avif') {
     const { encode } = await import('@jsquash/avif');
     return encode(imageData, {
-      quality: settings.quality,
+      quality: settings.lossless ? 100 : settings.quality,
       speed: 7
     });
   }
@@ -27,7 +27,7 @@ export async function compressImageData(imageData: ImageData, settings: Compress
 
   const { encode } = await import('@jsquash/jpeg');
   return encode(imageData, {
-    quality: settings.quality,
+    quality: settings.lossless ? 100 : settings.quality,
     baseline: false,
     optimize_coding: true
   });

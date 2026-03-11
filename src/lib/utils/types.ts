@@ -10,6 +10,7 @@ export interface CompressionPreset {
 export interface CompressionSettings {
   format: OutputFormat;
   quality: number;
+  lossless: boolean;
 }
 
 export type JobStatus = 'queued' | 'processing' | 'done' | 'error';

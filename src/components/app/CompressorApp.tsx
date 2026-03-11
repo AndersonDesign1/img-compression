@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { strToU8, zip } from 'fflate';
 import { Dropzone } from './Dropzone';
-import { PresetControls } from './PresetControls';
+import { ToolbarControls } from './PresetControls';
 import { CompressionList } from './CompressionList';
 import { PreviewPanel } from './PreviewPanel';
 import { loadSettings, saveSettings } from '../../lib/utils/storage';
@@ -10,7 +10,8 @@ import type { CompressionJob, CompressionSettings, WorkerCompressResponse } from
 
 const defaultSettings: CompressionSettings = {
   format: 'webp',
-  quality: 82
+  quality: 82,
+  lossless: false
 };
 
 function downloadBlob(blob: Blob, filename: string): void {
@@ -52,13 +53,18 @@ export default function CompressorApp() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [globalError, setGlobalError] = useState<string>('');
   const workerRef = useRef<Worker | null>(null);
+  const settingsRef = useRef(settings);
+
+  // Keep ref in sync so the auto-compress callback always uses latest settings
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
 
   const selectedJob = useMemo(() => jobs.find((job) => job.id === selectedId), [jobs, selectedId]);
   const isProcessing = useMemo(() => jobs.some((job) => job.status === 'processing'), [jobs]);
-  const queueProgress = useMemo(() => {
-    if (jobs.length === 0) return 0;
-    return Math.round(jobs.reduce((sum, job) => sum + job.progress, 0) / jobs.length);
-  }, [jobs]);
+  const hasCompleted = useMemo(() => jobs.some((job) => job.status === 'done'), [jobs]);
+  const hasSelectedOutput = !!(selectedJob?.output && selectedJob?.outputName);
+  const hasJobs = jobs.length > 0;
 
   useEffect(() => {
     return () => {
@@ -94,11 +100,11 @@ export default function CompressorApp() {
         );
       };
       workerRef.current.onerror = () => {
-        setGlobalError('Compression worker failed to initialize. Please refresh and try again.');
+        setGlobalError('Compression worker failed. Please refresh.');
         setJobs((current) =>
           current.map((job) =>
             job.status === 'processing'
-              ? { ...job, status: 'error', error: 'Compression worker failed to initialize.', progress: 100 }
+              ? { ...job, status: 'error', error: 'Worker failed.', progress: 100 }
               : job
           )
         );
@@ -107,6 +113,23 @@ export default function CompressorApp() {
     return workerRef.current;
   }
 
+  // Compress a set of jobs immediately
+  const compressJobs = useCallback((jobsToCompress: CompressionJob[]) => {
+    const worker = ensureWorker();
+    const currentSettings = settingsRef.current;
+    saveSettings(currentSettings);
+
+    setJobs((current) =>
+      current.map((job) => {
+        const shouldCompress = jobsToCompress.some((j) => j.id === job.id);
+        if (!shouldCompress) return job;
+        worker.postMessage({ id: job.id, file: job.file, settings: currentSettings });
+        return { ...job, status: 'processing', progress: 5, error: undefined, output: undefined, outputName: undefined };
+      })
+    );
+  }, []);
+
+  // Auto-compress: add files and immediately start compression
   function addFiles(files: File[]) {
     const next = files
       .filter((file) => file.type.startsWith('image/'))
@@ -128,6 +151,9 @@ export default function CompressorApp() {
       setSelectedId((existing) => existing ?? combined[0]?.id ?? null);
       return combined;
     });
+
+    // Auto-compress the newly added files
+    setTimeout(() => compressJobs(next), 50);
   }
 
   function clearQueue() {
@@ -137,28 +163,16 @@ export default function CompressorApp() {
     setGlobalError('');
   }
 
-  function runCompression() {
-    if (!jobs.length) {
-      setGlobalError('Add at least one image before compressing.');
-      return;
+  function downloadSelected() {
+    if (selectedJob?.output && selectedJob.outputName) {
+      downloadBlob(selectedJob.output, selectedJob.outputName);
     }
-
-    setGlobalError('');
-    saveSettings(settings);
-    const worker = ensureWorker();
-
-    setJobs((current) =>
-      current.map((job) => {
-        worker.postMessage({ id: job.id, file: job.file, settings });
-        return { ...job, status: 'processing', progress: 5, error: undefined, output: undefined, outputName: undefined };
-      })
-    );
   }
 
   async function downloadAllZip() {
     const completed = jobs.filter((job) => job.output && job.outputName);
     if (!completed.length) {
-      setGlobalError('Compress files first to download a zip.');
+      setGlobalError('No completed files to download.');
       return;
     }
 
@@ -192,97 +206,49 @@ export default function CompressorApp() {
     }
   }
 
-  return (
-    <div className="workspace-shell">
-      <section className="app-intro-grid">
-        <div>
-          <p className="section-label">Compression workspace</p>
-          <h1 className="page-title">Shrink delivery files without leaving the browser.</h1>
-          <p className="page-intro">
-            PixelPress keeps batch compression private and direct. Add a folder of images, tune the output once,
-            compare the result, and export the cleaned set from one calm workspace.
-          </p>
-        </div>
-        <aside className="surface-panel app-summary">
-          <p className="panel-kicker">Session overview</p>
-          <div className="app-summary-grid">
-            <div className="summary-metric">
-              <span>Files in queue</span>
-              <strong>{jobs.length}</strong>
-            </div>
-            <div className="summary-metric">
-              <span>Completed</span>
-              <strong>{jobs.filter((job) => job.status === 'done').length}</strong>
-            </div>
-            <div className="summary-metric">
-              <span>Preferred format</span>
-              <strong>{settings.format.toUpperCase()}</strong>
-            </div>
-          </div>
-        </aside>
-      </section>
-
-      <div className="app-workbench">
+  // Empty state — fullscreen dropzone
+  if (!hasJobs) {
+    return (
+      <div className="app-shell app-shell--empty">
         <Dropzone onFiles={addFiles} />
-        <section className="surface-panel workspace-status">
-          <div className="workspace-status-head">
-            <div>
-              <p className="panel-kicker">Batch controls</p>
-              <h2 className="panel-title">Run, review, and export the current set.</h2>
-            </div>
-            <span className="status-chip">{isProcessing ? 'Processing' : jobs.length ? 'Ready' : 'Waiting'}</span>
-          </div>
-
-          <div className="metric-row">
-            <div className="metric-line">
-              <span>Queue progress</span>
-              <strong>{queueProgress}%</strong>
-            </div>
-            <div className="metric-line">
-              <span>Selected file</span>
-              <strong>{selectedJob ? 'Focused' : 'None'}</strong>
-            </div>
-          </div>
-
-          <div className="progress-rail">
-            <div className="progress-value" style={{ width: `${queueProgress}%` }} />
-          </div>
-
-          <div className="action-row mt-4">
-            <button type="button" disabled={isProcessing} onClick={runCompression} className="button-primary">
-              Compress Batch
-            </button>
-            <button type="button" onClick={downloadAllZip} className="button-secondary">
-              Download All (.zip)
-            </button>
-            <button type="button" disabled={isProcessing} onClick={clearQueue} className="button-secondary">
-              Clear Queue
-            </button>
-            {selectedJob?.output && selectedJob.outputName ? (
-              <button
-                type="button"
-                onClick={() => selectedJob?.output && selectedJob.outputName ? downloadBlob(selectedJob.output, selectedJob.outputName) : null}
-                className="button-secondary"
-              >
-                Download Selected
-              </button>
-            ) : null}
-          </div>
-
-          <p className="support-copy mt-4" aria-live="polite">
-            {isProcessing ? 'Compression is running in the background worker.' : 'Ready for the next batch.'}
-          </p>
-
-          {globalError ? <p className="feedback-error">{globalError}</p> : null}
-        </section>
+        {globalError && <p className="app-error">{globalError}</p>}
+        <ToolbarControls
+          settings={settings}
+          onChange={setSettings}
+          onDownloadSelected={downloadSelected}
+          onDownloadZip={downloadAllZip}
+          onClear={clearQueue}
+          isProcessing={isProcessing}
+          hasJobs={hasJobs}
+          hasCompleted={hasCompleted}
+          hasSelectedOutput={hasSelectedOutput}
+        />
       </div>
+    );
+  }
 
-      <div className="workspace-grid">
-        <PresetControls settings={settings} onChange={setSettings} />
-        <PreviewPanel job={selectedJob} />
+  // Working state — sidebar + preview + toolbar
+  return (
+    <div className="app-shell app-shell--working">
+      <div className="app-body">
+        <CompressionList jobs={jobs} selectedId={selectedId} onSelect={setSelectedId} />
+        <div className="app-content">
+          <PreviewPanel job={selectedJob} />
+          <Dropzone onFiles={addFiles} compact />
+        </div>
       </div>
-
-      <CompressionList jobs={jobs} selectedId={selectedId} onSelect={setSelectedId} />
+      {globalError && <p className="app-error">{globalError}</p>}
+      <ToolbarControls
+        settings={settings}
+        onChange={setSettings}
+        onDownloadSelected={downloadSelected}
+        onDownloadZip={downloadAllZip}
+        onClear={clearQueue}
+        isProcessing={isProcessing}
+        hasJobs={hasJobs}
+        hasCompleted={hasCompleted}
+        hasSelectedOutput={hasSelectedOutput}
+      />
     </div>
   );
 }

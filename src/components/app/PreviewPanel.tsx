@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Icon } from '@iconify/react';
 import { formatBytes } from '../../lib/utils/format';
 import type { CompressionJob } from '../../lib/utils/types';
 
@@ -7,6 +8,7 @@ interface PreviewPanelProps {
 }
 
 export function PreviewPanel({ job }: PreviewPanelProps) {
+  const [view, setView] = useState<'original' | 'compressed'>('original');
   const originalUrl = useMemo(() => (job?.file ? URL.createObjectURL(job.file) : null), [job?.file]);
   const outputUrl = useMemo(() => (job?.output ? URL.createObjectURL(job.output) : null), [job?.output]);
 
@@ -17,53 +19,78 @@ export function PreviewPanel({ job }: PreviewPanelProps) {
     };
   }, [originalUrl, outputUrl]);
 
+  useEffect(() => {
+    if (job?.output) setView('compressed');
+    else setView('original');
+  }, [job?.output]);
+
   if (!job) {
     return (
-      <section className="surface-panel preview-panel">
-        <div>
-          <p className="panel-kicker">Preview</p>
-          <h2 className="panel-title">Inspect the original beside the compressed result.</h2>
+      <div className="preview-main">
+        <div className="preview-empty">
+          <Icon icon="hugeicons:image-01" width={28} className="icon-muted" />
+          <p>Select a file to preview</p>
         </div>
-        <div className="empty-state">
-          <p>Select a queued image to compare source and output in one place.</p>
-          <ol>
-            <li>Add images to the batch.</li>
-            <li>Choose a preset or adjust format and quality.</li>
-            <li>Run compression, then review the result here before export.</li>
-          </ol>
-        </div>
-      </section>
+      </div>
     );
   }
 
+  const ratio = job.output ? Math.round((1 - job.output.size / job.file.size) * 100) : null;
+  const showUrl = view === 'compressed' && outputUrl ? outputUrl : originalUrl;
+
   return (
-    <section className="surface-panel preview-panel">
-      <div>
-        <p className="panel-kicker">Preview</p>
-        <h2 className="panel-title">Side-by-side review for the selected file.</h2>
-      </div>
-      <div className="preview-meta">
-        <span>{job.file.name}</span>
-        <span>{formatBytes(job.file.size)} original</span>
-        {job.output ? <span>{formatBytes(job.output.size)} compressed</span> : null}
-        <span>{job.status}</span>
-      </div>
-      <div className="preview-grid">
-        <article className="preview-frame">
-          <p className="preview-caption">Original</p>
-          {originalUrl ? <img src={originalUrl} alt={`Original ${job.file.name}`} /> : null}
-        </article>
-        <article className="preview-frame">
-          <p className="preview-caption">Compressed</p>
-          {outputUrl ? (
-            <img src={outputUrl} alt={`Compressed ${job.file.name}`} />
-          ) : (
-            <div className="empty-state">
-              <p>Run compression to render the output preview here.</p>
-            </div>
+    <div className="preview-main">
+      <div className="preview-topbar">
+        <div className="preview-file-info">
+          <Icon icon="hugeicons:image-02" width={15} className="icon-muted" />
+          <span className="preview-filename">{job.file.name}</span>
+          <span className="preview-size">{formatBytes(job.file.size)}</span>
+          {job.output && (
+            <>
+              <Icon icon="hugeicons:arrow-right-01" width={13} className="icon-muted" />
+              <span className="preview-size">{formatBytes(job.output.size)}</span>
+              {ratio !== null && <span className="preview-savings">-{ratio}%</span>}
+            </>
           )}
-        </article>
+        </div>
+        {job.output && (
+          <div className="preview-toggle">
+            <button
+              type="button"
+              className="preview-toggle-btn"
+              data-active={view === 'original'}
+              onClick={() => setView('original')}
+            >
+              Original
+            </button>
+            <button
+              type="button"
+              className="preview-toggle-btn"
+              data-active={view === 'compressed'}
+              onClick={() => setView('compressed')}
+            >
+              Compressed
+            </button>
+          </div>
+        )}
       </div>
-    </section>
+
+      <div className="preview-canvas">
+        {showUrl ? (
+          <img src={showUrl} alt={`${view === 'compressed' ? 'Compressed' : 'Original'} ${job.file.name}`} />
+        ) : (
+          <div className="preview-empty">
+            {job.status === 'processing' ? (
+              <>
+                <Icon icon="hugeicons:loading-03" width={24} className="spin icon-accent" />
+                <p>Compressing…</p>
+              </>
+            ) : (
+              <p>Waiting for compression</p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

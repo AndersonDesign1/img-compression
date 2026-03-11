@@ -1,3 +1,4 @@
+import { Icon } from '@iconify/react';
 import { formatBytes } from '../../lib/utils/format';
 import type { CompressionJob } from '../../lib/utils/types';
 
@@ -7,55 +8,57 @@ interface CompressionListProps {
   onSelect: (id: string) => void;
 }
 
+function statusIcon(status: string) {
+  switch (status) {
+    case 'queued':
+      return <Icon icon="hugeicons:time-02" width={14} className="icon-muted" />;
+    case 'processing':
+      return <Icon icon="hugeicons:loading-03" width={14} className="spin icon-accent" />;
+    case 'done':
+      return <Icon icon="hugeicons:checkmark-circle-02" width={14} className="icon-success" />;
+    case 'error':
+      return <Icon icon="hugeicons:alert-circle" width={14} className="icon-error" />;
+    default:
+      return null;
+  }
+}
+
 export function CompressionList({ jobs, selectedId, onSelect }: CompressionListProps) {
+  if (jobs.length === 0) return null;
+
   return (
-    <section className="surface-panel queue-panel">
-      <div className="panel-head">
-        <div>
-          <p className="panel-kicker">Queue</p>
-          <h2 className="panel-title">Review every file before export.</h2>
-        </div>
-        <span className="status-chip">{jobs.length} item{jobs.length === 1 ? '' : 's'}</span>
+    <aside className="app-sidebar">
+      <div className="sidebar-header">
+        <span className="sidebar-title">Files</span>
+        <span className="sidebar-count">{jobs.length}</span>
       </div>
-
-      {jobs.length === 0 ? (
-        <div className="empty-state">
-          <p className="queue-empty">Start in the intake area above. Each image will appear here with its progress, output size, and any errors that need attention.</p>
-        </div>
-      ) : null}
-
-      <div className="queue-list">
+      <div className="sidebar-list">
         {jobs.map((job) => {
-        const ratio = job.output ? Math.round((1 - job.output.size / job.file.size) * 100) : null;
-        return (
-          <button
-            key={job.id}
-            type="button"
-            className={`queue-item ${selectedId === job.id ? 'is-active' : ''}`}
-            onClick={() => onSelect(job.id)}
-          >
-            <div className="queue-top">
-              <div>
-                <p className="queue-name truncate">{job.file.name}</p>
-                <div className="queue-meta">
-                  <span>{formatBytes(job.file.size)}</span>
-                  <span>{job.status}</span>
-                  {job.output ? <span>{formatBytes(job.output.size)} output</span> : null}
-                  {ratio !== null ? <span className="queue-savings">{ratio}% smaller</span> : null}
-                </div>
+          const ratio = job.output ? Math.round((1 - job.output.size / job.file.size) * 100) : null;
+          return (
+            <button
+              key={job.id}
+              type="button"
+              className={`sidebar-item ${selectedId === job.id ? 'is-active' : ''}`}
+              onClick={() => onSelect(job.id)}
+            >
+              <div className="sidebar-item-row">
+                {statusIcon(job.status)}
+                <span className="sidebar-item-name">{job.file.name}</span>
               </div>
-              <span className="queue-status">{selectedId === job.id ? 'Selected' : job.status}</span>
-            </div>
-
-            <div className="progress-rail mt-3">
-              <div className="progress-value" style={{ width: `${job.progress}%` }} />
-            </div>
-
-            {job.error ? <p className="queue-error">{job.error}</p> : null}
-          </button>
-        );
-      })}
+              <div className="sidebar-item-meta">
+                <span>{formatBytes(job.file.size)}</span>
+                {job.output && ratio !== null && <span className="sidebar-savings">-{ratio}%</span>}
+              </div>
+              {job.status === 'processing' && (
+                <div className="sidebar-progress">
+                  <div className="sidebar-progress-value" style={{ width: `${job.progress}%` }} />
+                </div>
+              )}
+            </button>
+          );
+        })}
       </div>
-    </section>
+    </aside>
   );
 }
