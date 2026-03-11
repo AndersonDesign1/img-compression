@@ -8,6 +8,9 @@ export default defineConfig({
   integrations: [react(), tailwind()],
   adapter: vercel(),
   vite: {
+    optimizeDeps: {
+      exclude: ['@jsquash/avif', '@jsquash/jpeg', '@jsquash/png', '@jsquash/webp']
+    },
     build: {
       target: 'esnext'
     },
