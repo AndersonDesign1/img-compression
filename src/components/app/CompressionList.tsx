@@ -23,6 +23,9 @@ export function CompressionList({ jobs, selectedId, onSelect }: CompressionListP
           >
             <p className="truncate font-medium text-white">{job.file.name}</p>
             <p className="text-xs text-slate-300">{formatBytes(job.file.size)} · {job.status}</p>
+            <div className="mt-2 h-1.5 rounded-full bg-white/10">
+              <div className="h-1.5 rounded-full bg-cyan-400" style={{ width: `${job.progress}%` }} />
+            </div>
             {job.output ? <p className="text-xs text-emerald-300">{formatBytes(job.output.size)} ({ratio}% smaller)</p> : null}
             {job.error ? <p className="text-xs text-rose-300">{job.error}</p> : null}
           </button>

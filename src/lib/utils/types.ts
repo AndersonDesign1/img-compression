@@ -31,8 +31,18 @@ export interface WorkerCompressRequest {
   settings: CompressionSettings;
 }
 
+export type WorkerProgressStage = 'decoding' | 'encoding';
+
+export interface WorkerCompressProgress {
+  id: string;
+  kind: 'progress';
+  progress: number;
+  stage: WorkerProgressStage;
+}
+
 export interface WorkerCompressSuccess {
   id: string;
+  kind: 'result';
   ok: true;
   output: Blob;
   outputName: string;
@@ -40,8 +50,9 @@ export interface WorkerCompressSuccess {
 
 export interface WorkerCompressError {
   id: string;
+  kind: 'result';
   ok: false;
   error: string;
 }
 
-export type WorkerCompressResponse = WorkerCompressSuccess | WorkerCompressError;
+export type WorkerCompressResponse = WorkerCompressProgress | WorkerCompressSuccess | WorkerCompressError;

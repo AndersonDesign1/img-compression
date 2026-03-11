@@ -1,13 +1,28 @@
-import type { CompressionSettings } from './types';
+import type { CompressionSettings, OutputFormat } from './types';
 
 const STORAGE_KEY = 'pixelpress:last-settings:v1';
+const validFormats: OutputFormat[] = ['original', 'jpeg', 'png', 'webp', 'avif'];
+
+function isValidSettings(value: unknown): value is CompressionSettings {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<CompressionSettings>;
+  return (
+    typeof candidate.quality === 'number' &&
+    candidate.quality >= 1 &&
+    candidate.quality <= 100 &&
+    typeof candidate.stripMetadata === 'boolean' &&
+    typeof candidate.format === 'string' &&
+    validFormats.includes(candidate.format as OutputFormat)
+  );
+}
 
 export function loadSettings(): CompressionSettings | null {
   if (typeof window === 'undefined') return null;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as CompressionSettings;
+    const parsed = JSON.parse(raw) as unknown;
+    return isValidSettings(parsed) ? parsed : null;
   } catch {
     return null;
   }

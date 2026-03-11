@@ -31,7 +31,10 @@ export function Dropzone({ onFiles }: DropzoneProps) {
         multiple
         accept="image/*"
         className="hidden"
-        onChange={(event) => onFiles(Array.from(event.target.files ?? []))}
+        onChange={(event) => {
+          onFiles(Array.from(event.target.files ?? []));
+          event.currentTarget.value = '';
+        }}
       />
     </section>
   );
