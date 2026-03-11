@@ -47,14 +47,6 @@ export function PresetControls({ settings, onChange }: PresetControlsProps) {
           <option value="avif">AVIF</option>
         </select>
       </label>
-      <label className="flex items-center gap-2 text-sm text-slate-200">
-        <input
-          type="checkbox"
-          checked={settings.stripMetadata}
-          onChange={(event) => onChange({ ...settings, stripMetadata: event.target.checked })}
-        />
-        Strip metadata where possible
-      </label>
     </section>
   );
 }
