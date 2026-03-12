@@ -19,7 +19,8 @@ function isValidSettings(value: unknown): value is CompressionSettings {
     candidate.quality >= 1 &&
     candidate.quality <= 100 &&
     typeof candidate.format === "string" &&
-    validFormats.includes(candidate.format as FormatPreference)
+    validFormats.includes(candidate.format as FormatPreference) &&
+    typeof candidate.lossless === "boolean"
   );
 }
 

@@ -1,4 +1,9 @@
-import type { FormatPreference, OutputFormat } from "./types";
+import type {
+  CompressionSettings,
+  CompressionStrategy,
+  FormatPreference,
+  OutputFormat,
+} from "./types";
 
 export function formatBytes(bytes: number): string {
   if (bytes < 1024) {
@@ -86,14 +91,16 @@ export function savingsPercent(sizeDelta: number, originalSize: number) {
   return Math.round((Math.abs(sizeDelta) / originalSize) * 100);
 }
 
-export function settingsSignature({
-  format,
-  lossless,
-  quality,
-}: {
-  format: FormatPreference;
-  lossless: boolean;
-  quality: number;
-}) {
-  return `${format}:${quality}:${lossless ? "lossless" : "lossy"}`;
+export function settingsSignature(
+  settings: CompressionSettings,
+  presetId: string | null,
+  strategy: CompressionStrategy
+) {
+  return JSON.stringify({
+    format: settings.format,
+    lossless: settings.lossless,
+    presetId,
+    quality: settings.quality,
+    strategy,
+  });
 }

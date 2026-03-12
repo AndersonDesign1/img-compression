@@ -78,7 +78,7 @@ export function Dropzone({ onFiles }: DropzoneProps) {
           Drop images here
         </span>
         <span className="m-0 text-[0.88rem] text-muted">
-          Runs locally. Paste or select files.
+          Everything stays in your browser. Paste, drop, or pick files.
         </span>
 
         <span className="mt-4 inline-flex items-center gap-2 rounded-[0.75rem] border border-border-strong bg-white/6 px-4 py-2.5 font-medium text-[0.92rem] text-text hover:-translate-y-px hover:bg-white/10">
@@ -99,7 +99,7 @@ export function Dropzone({ onFiles }: DropzoneProps) {
               V
             </kbd>
           </span>{" "}
-          to paste
+          pastes from your clipboard
         </span>
       </button>
 

@@ -99,7 +99,7 @@ export function ToolbarControls({
               </span>
               <span className="text-[0.72rem] text-white/45">
                 {selectedPreset?.description ??
-                  "Open Fine tune for custom settings"}
+                  "Open Fine tune if you want to steer it yourself"}
               </span>
             </span>
             <Icon
@@ -201,7 +201,7 @@ export function ToolbarControls({
                 ) : null}
               </div>
               <p className="text-[0.74rem] text-white/45">
-                Change format or quality when you want something specific.
+                Change the format or quality if you already know what you want.
               </p>
             </div>
 
@@ -293,9 +293,16 @@ export function ToolbarControls({
 
             {losslessSupported ? null : (
               <p className="text-[0.74rem] text-white/45">
-                Lossless only works for PNG and WebP outputs.
+                Lossless is only available for PNG and WebP output.
               </p>
             )}
+
+            {activeFormat === "png" ? (
+              <p className="text-[0.74rem] text-white/45">
+                PNG stays lossless here, so it usually saves less than WebP or
+                AVIF. Switch formats when you want a much smaller file.
+              </p>
+            ) : null}
           </div>
         </div>
       </div>

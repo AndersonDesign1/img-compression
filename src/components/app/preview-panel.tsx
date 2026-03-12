@@ -40,21 +40,21 @@ function useObjectUrl(file?: Blob | File) {
 function variantSummary(variant: CompressionVariant, originalSize: number) {
   if (variant.status === "processing") {
     return {
-      text: "Working on it...",
+      text: "Still working on this one...",
       tone: "text-sky-300",
     };
   }
 
   if (variant.status === "error") {
     return {
-      text: variant.error ?? "That pass failed.",
+      text: variant.error ?? "That version did not make it through.",
       tone: "text-rose-300",
     };
   }
 
   if (variant.sizeDelta === null || !variant.output) {
     return {
-      text: "No output yet.",
+      text: "No result yet.",
       tone: "text-white/62",
     };
   }
@@ -71,7 +71,7 @@ function variantSummary(variant: CompressionVariant, originalSize: number) {
 
   if (variant.sizeDelta === 0) {
     return {
-      text: `${formatLabel(variant.format)} landed at the same size.`,
+      text: `${formatLabel(variant.format)} came out the same size.`,
       tone: "text-white/62",
     };
   }
@@ -136,7 +136,7 @@ export function PreviewPanel({ job, onSelectVariant }: PreviewPanelProps) {
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 text-[0.9rem] text-muted opacity-60">
           <Icon className="text-muted" icon="hugeicons:image-01" width={28} />
-          <p>Select a file to compare.</p>
+          <p>Pick a file and we can look at the difference.</p>
         </div>
       </div>
     );
@@ -148,14 +148,14 @@ export function PreviewPanel({ job, onSelectVariant }: PreviewPanelProps) {
       : (job.variants.find((variant) => variant.id === job.bestVariantId) ??
         null);
   let activeSummary = {
-    text: "Original is still the best result so far.",
+    text: "The original is still the best call so far.",
     tone: "text-white/62",
   };
   if (activeVariant) {
     activeSummary = variantSummary(activeVariant, job.file.size);
   } else if (latestVariant?.status === "larger-than-original") {
     activeSummary = {
-      text: "The latest try got bigger, so the original stays the default.",
+      text: "The latest try got bigger, so the original stays selected.",
       tone: "text-amber-300",
     };
   }
@@ -193,7 +193,7 @@ export function PreviewPanel({ job, onSelectVariant }: PreviewPanelProps) {
       <div className="mb-3 flex items-center justify-between text-[0.82rem]">
         <span className="text-white/62">Original preview</span>
         <span className="text-amber-300">
-          Nothing smaller yet, so the original stays selected.
+          Nothing smaller yet, so the original still wins.
         </span>
       </div>
       <div className="min-h-0 flex-1 overflow-hidden rounded-[0.75rem] border border-border bg-black/40">
@@ -202,7 +202,7 @@ export function PreviewPanel({ job, onSelectVariant }: PreviewPanelProps) {
     </div>
   ) : (
     <div className="flex min-h-0 flex-1 items-center justify-center px-6 text-center text-[0.9rem] text-muted">
-      <p>Waiting for the original preview.</p>
+      <p>Waiting for the original preview to show up.</p>
     </div>
   );
 
@@ -375,7 +375,7 @@ export function PreviewPanel({ job, onSelectVariant }: PreviewPanelProps) {
                       <div className="border-border border-b px-3 py-2 text-[0.78rem] text-white/62">
                         {activeVariant?.output
                           ? `${formatLabel(activeVariant.format)} version`
-                          : "No smaller version yet"}
+                          : "Nothing smaller yet"}
                       </div>
                       <div className="flex min-h-0 flex-1 items-center justify-center p-3">
                         {activeOutputUrl ? (
@@ -389,7 +389,7 @@ export function PreviewPanel({ job, onSelectVariant }: PreviewPanelProps) {
                         ) : (
                           <p className="max-w-[20rem] text-center text-[0.88rem] text-muted">
                             Nothing smaller to inspect yet. The original is
-                            still doing the job.
+                            still the better pick.
                           </p>
                         )}
                       </div>

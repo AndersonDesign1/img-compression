@@ -72,7 +72,7 @@ export function CompressionList({
           const active = selectedId === job.id;
           const variantCount = job.variants.length;
 
-          let summary = "Original is still the smallest.";
+          let summary = "The original is still the smallest.";
           let summaryClassName = "text-white/62";
           if (
             bestVariant &&
@@ -85,13 +85,13 @@ export function CompressionList({
             )}%`;
             summaryClassName = "text-emerald-300";
           } else if (latestVariant?.status === "processing") {
-            summary = `Trying ${formatLabel(latestVariant.format)}...`;
+            summary = `Trying ${formatLabel(latestVariant.format)} now...`;
             summaryClassName = "text-sky-300";
           } else if (latestVariant?.status === "larger-than-original") {
-            summary = "Latest try came out larger.";
+            summary = "The latest try came out larger.";
             summaryClassName = "text-amber-300";
           } else if (job.status === "error") {
-            summary = "This image needs another try.";
+            summary = "This one needs another pass.";
             summaryClassName = "text-rose-300";
           }
 

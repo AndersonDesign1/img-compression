@@ -66,9 +66,14 @@ async function encodeForStrategy(
   settings: WorkerCompressRequest["settings"],
   strategy: CompressionStrategy
 ) {
+  const sourceFormat = formatFromFile(file);
   const outputFormat = resolveOutputFormat(file, settings.format);
 
-  if (strategy === "oxipng" && formatFromFile(file) === "png") {
+  if (
+    sourceFormat === "png" &&
+    outputFormat === "png" &&
+    (strategy === "oxipng" || strategy === "png-encode")
+  ) {
     const sourceBuffer = await file.arrayBuffer();
     const bytesBuffer = await optimiseSourcePng(
       sourceBuffer,
