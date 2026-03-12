@@ -1,7 +1,7 @@
 ---
 import { getCollection, render } from "astro:content";
 import BaseLayout from "@/layouts/base-layout.astro";
-import { SITE_ISSUES_URL, SITE_REPO_URL } from "@/lib/utils/site";
+import { SITE_REPO_URL } from "@/lib/utils/site";
 
 const entries = (await getCollection("changelog")).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime()
@@ -12,9 +12,6 @@ const renderedEntries = await Promise.all(
     Content: (await render(entry)).Content,
   }))
 );
-
-const secondaryButtonClass =
-  "inline-flex min-h-12 items-center justify-center rounded-full border border-border bg-white/3 px-5 text-sm font-semibold text-text transition duration-200 hover:bg-accent-soft hover:border-border-strong";
 ---
 
 <BaseLayout
@@ -22,61 +19,40 @@ const secondaryButtonClass =
   description="Product and release updates for PixelPress."
 >
   <section class="grid gap-8">
-    <div class="max-w-[44rem]" data-reveal-group="hero">
-      <p
-        class="inline-flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/72 before:h-px before:w-7 before:bg-white/30 before:content-['']"
-        data-reveal
-      >
-        Release notes
+    <div class="max-w-[40rem] space-y-4">
+      <p class="text-[0.72rem] uppercase tracking-[0.18em] text-white/40">
+        Changelog
       </p>
       <h1
-        class="mt-4 max-w-[13ch] font-display text-[clamp(2.8rem,6vw,4.9rem)] leading-[0.96] tracking-[-0.06em] text-text"
-        data-reveal
+        class="font-display text-[clamp(2rem,4vw,3.2rem)] leading-[1.02] tracking-[-0.05em] text-text"
       >
-        Shipping it in public, fixing it in public.
+        Small changes. Nothing dramatic.
       </h1>
-      <p
-        class="mt-4 max-w-[42rem] text-[clamp(1rem,1.6vw,1.15rem)] leading-[1.75] text-muted"
-        data-reveal
-      >
-        This is the running log for PixelPress. The updates are mostly about
-        stability, workflow sharpness, and getting the rough edges out of a tool
-        that is meant to stay lightweight.
+      <p class="text-[1rem] leading-7 text-white/58">
+        Mostly fixes, small improvements, and cleanup. Full commit history is on
+        GitHub.
       </p>
-      <div class="mt-8 flex flex-wrap gap-3" data-reveal>
-        <a
-          class={secondaryButtonClass}
-          href={SITE_REPO_URL}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Follow the repo
-        </a>
-        <a
-          class={secondaryButtonClass}
-          href={SITE_ISSUES_URL}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Report a rough edge
-        </a>
-      </div>
+      <a
+        class="text-sm text-white/68 underline decoration-white/15 underline-offset-4 hover:decoration-white/55 hover:text-text"
+        href={SITE_REPO_URL}
+        target="_blank"
+        rel="noreferrer"
+      >
+        View the repo
+      </a>
     </div>
-    <div class="grid gap-4" data-reveal-group="scroll">
+    <div class="grid gap-0 border-t border-border">
       {renderedEntries.map((entry) => (
         /* biome-ignore lint/correctness/useJsxKeyInIterable: Astro iterables do not use React keys. */
-        <article
-          class="rounded-[1.2rem] border border-white/6 bg-[linear-gradient(180deg,rgb(255_255_255_/_0.035),rgb(255_255_255_/_0.012)),rgb(9_9_9_/_0.9)] p-5 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.03),0_24px_56px_rgb(0_0_0_/_0.22)] md:p-6"
-          data-reveal
-        >
-          <p class="font-semibold text-[0.74rem] text-white/70 uppercase tracking-[0.16em]">
+        <article class="grid gap-3 border-border border-b py-5">
+          <p class="text-[0.75rem] text-white/40">
             {entry.data.version} · {entry.data.date.toISOString().slice(0, 10)}
           </p>
-          <h2 class="mt-2 font-display text-[1.15rem] text-text tracking-[-0.04em]">
+          <h2 class="font-display text-[1.05rem] text-text tracking-[-0.03em]">
             {entry.data.summary}
           </h2>
           <div
-            class="relative mt-4 pl-4 text-[0.95rem] text-white/56 leading-7 before:absolute before:top-[0.15rem] before:bottom-[0.15rem] before:left-0 before:w-px before:bg-white/6 [&_code]:rounded-md [&_code]:border [&_code]:border-border [&_code]:bg-white/5 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[0.92em] [&_code]:text-white/72 [&_li]:text-white/56 [&_li]:leading-7 [&_p]:text-white/56 [&_p]:leading-7 [&_ul]:pl-5"
+            class="text-[0.95rem] text-white/56 leading-7 [&_li]:ml-5 [&_li]:text-white/56 [&_li]:leading-7 [&_p]:text-white/56 [&_p]:leading-7 [&_ul]:pl-0"
           >
             <entry.Content />
           </div>

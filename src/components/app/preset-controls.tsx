@@ -1,5 +1,9 @@
 import { Icon } from "@iconify/react";
-import type { CompressionSettings, OutputFormat } from "../../lib/utils/types";
+import type {
+  CompressionSettings,
+  FormatPreference,
+  OutputFormat,
+} from "../../lib/utils/types";
 
 interface ToolbarControlsProps {
   hasCompleted: boolean;
@@ -11,9 +15,11 @@ interface ToolbarControlsProps {
   onDownloadSelected: () => void;
   onDownloadZip: () => void;
   settings: CompressionSettings;
+  sourceFormat: OutputFormat | null;
 }
 
-const formats: { value: OutputFormat; label: string }[] = [
+const formats: { value: FormatPreference; label: string }[] = [
+  { value: "original", label: "Original" },
   { value: "png", label: "PNG" },
   { value: "jpeg", label: "JPEG" },
   { value: "webp", label: "WebP" },
@@ -30,15 +36,17 @@ export function ToolbarControls({
   hasJobs,
   hasCompleted,
   hasSelectedOutput,
+  sourceFormat,
 }: ToolbarControlsProps) {
-  const losslessSupported =
-    settings.format === "png" || settings.format === "webp";
+  const activeFormat =
+    settings.format === "original" ? sourceFormat : settings.format;
+  const losslessSupported = activeFormat === "png" || activeFormat === "webp";
 
   const toolbarButtonClass =
     "inline-flex items-center gap-1.5 rounded-[0.55rem] border border-border bg-white/4 px-3 py-1.5 text-[0.82rem] font-medium text-muted-strong whitespace-nowrap hover:border-border-strong hover:bg-white/8";
 
   return (
-    <div className="flex flex-wrap items-center gap-3 border-border border-t bg-black/85 px-4 py-3 backdrop-blur-xl">
+    <div className="flex flex-wrap items-center gap-2.5 border-border border-t bg-black/85 px-3 py-2.5 backdrop-blur-xl">
       <div className="flex items-center gap-2">
         <span className="whitespace-nowrap text-[0.78rem] text-muted">
           Format
@@ -72,7 +80,7 @@ export function ToolbarControls({
 
       <div className="hidden h-6 w-px bg-border md:block" />
 
-      <div className="flex min-w-[220px] flex-1 items-center gap-2 md:max-w-[280px]">
+      <div className="flex min-w-[180px] flex-1 items-center gap-2 md:max-w-[240px]">
         <span className="whitespace-nowrap text-[0.78rem] text-muted">
           Smaller
         </span>
@@ -110,7 +118,7 @@ export function ToolbarControls({
 
       {!losslessSupported && (
         <span className="text-[0.72rem] text-muted">
-          Lossless is available for PNG and WebP.
+          Lossless is available for PNG and WebP outputs.
         </span>
       )}
 

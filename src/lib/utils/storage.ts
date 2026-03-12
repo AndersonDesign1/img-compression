@@ -1,7 +1,13 @@
-import type { CompressionSettings, OutputFormat } from "./types";
+import type { CompressionSettings, FormatPreference } from "./types";
 
-const STORAGE_KEY = "pixelpress:last-settings:v1";
-const validFormats: OutputFormat[] = ["jpeg", "png", "webp", "avif"];
+const STORAGE_KEY = "pixelpress:last-settings:v2";
+const validFormats: FormatPreference[] = [
+  "original",
+  "jpeg",
+  "png",
+  "webp",
+  "avif",
+];
 
 function isValidSettings(value: unknown): value is CompressionSettings {
   if (!value || typeof value !== "object") {
@@ -13,7 +19,7 @@ function isValidSettings(value: unknown): value is CompressionSettings {
     candidate.quality >= 1 &&
     candidate.quality <= 100 &&
     typeof candidate.format === "string" &&
-    validFormats.includes(candidate.format as OutputFormat)
+    validFormats.includes(candidate.format as FormatPreference)
   );
 }
 

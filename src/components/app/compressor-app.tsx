@@ -1,6 +1,7 @@
 import { strToU8, zip } from "fflate";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { sanitizeFilename } from "../../lib/utils/filenames";
+import { formatFromFile } from "../../lib/utils/format";
 import { loadSettings, saveSettings } from "../../lib/utils/storage";
 import type {
   CompressionJob,
@@ -13,7 +14,7 @@ import { ToolbarControls } from "./preset-controls";
 import { PreviewPanel } from "./preview-panel";
 
 const defaultSettings: CompressionSettings = {
-  format: "webp",
+  format: "original",
   quality: 82,
   lossless: false,
 };
@@ -59,6 +60,7 @@ export default function CompressorApp() {
   const [jobs, setJobs] = useState<CompressionJob[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [globalError, setGlobalError] = useState<string>("");
+  const addFilesInputRef = useRef<HTMLInputElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const settingsRef = useRef(settings);
 
@@ -76,6 +78,14 @@ export default function CompressorApp() {
   );
   const hasCompleted = useMemo(
     () => jobs.some((job) => job.status === "done"),
+    [jobs]
+  );
+  const selectedSourceFormat = useMemo(
+    () => (selectedJob ? formatFromFile(selectedJob.file) : null),
+    [selectedJob]
+  );
+  const fallbackSourceFormat = useMemo(
+    () => (jobs[0] ? formatFromFile(jobs[0].file) : null),
     [jobs]
   );
   const hasSelectedOutput = !!(selectedJob?.output && selectedJob?.outputName);
@@ -193,6 +203,10 @@ export default function CompressorApp() {
     setGlobalError("");
   }
 
+  function openAddFilesPicker() {
+    addFilesInputRef.current?.click();
+  }
+
   function downloadSelected() {
     if (selectedJob?.output && selectedJob.outputName) {
       downloadBlob(selectedJob.output, selectedJob.outputName);
@@ -247,10 +261,21 @@ export default function CompressorApp() {
 
   if (!hasJobs) {
     return (
-      <div className="flex min-h-[calc(100vh-3.5rem)] flex-col">
+      <div className="flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden">
         <div className="flex flex-1 flex-col">
           <Dropzone onFiles={addFiles} />
         </div>
+        <input
+          accept="image/*"
+          className="hidden"
+          multiple
+          onChange={(event) => {
+            addFiles(Array.from(event.target.files ?? []));
+            event.currentTarget.value = "";
+          }}
+          ref={addFilesInputRef}
+          type="file"
+        />
         {globalError && (
           <p className="border-[color:color-mix(in_oklab,var(--color-error)_30%,transparent)] border-t bg-[color:color-mix(in_oklab,var(--color-error)_12%,transparent)] px-4 py-2.5 text-center text-[0.88rem] text-[color:color-mix(in_oklab,var(--color-error)_72%,white_28%)]">
             {globalError}
@@ -266,22 +291,43 @@ export default function CompressorApp() {
           onDownloadSelected={downloadSelected}
           onDownloadZip={downloadAllZip}
           settings={settings}
+          sourceFormat={selectedSourceFormat ?? fallbackSourceFormat}
         />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col">
-      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+    <div className="flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden">
+      <div className="flex items-center justify-end border-border border-b px-3 py-2">
+        <button
+          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-[0.55rem] border border-border bg-white/4 px-3 py-1.5 font-medium text-[0.82rem] text-muted-strong hover:border-border-strong hover:bg-white/8"
+          onClick={openAddFilesPicker}
+          type="button"
+        >
+          <span className="text-[0.92rem] leading-none">+</span>
+          Add files
+        </button>
+        <input
+          accept="image/*"
+          className="hidden"
+          multiple
+          onChange={(event) => {
+            addFiles(Array.from(event.target.files ?? []));
+            event.currentTarget.value = "";
+          }}
+          ref={addFilesInputRef}
+          type="file"
+        />
+      </div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
         <CompressionList
           jobs={jobs}
           onSelect={setSelectedId}
           selectedId={selectedId}
         />
-        <div className="relative flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <PreviewPanel job={selectedJob} />
-          <Dropzone compact onFiles={addFiles} />
         </div>
       </div>
       {globalError && (
@@ -299,6 +345,7 @@ export default function CompressorApp() {
         onDownloadSelected={downloadSelected}
         onDownloadZip={downloadAllZip}
         settings={settings}
+        sourceFormat={selectedSourceFormat ?? fallbackSourceFormat}
       />
     </div>
   );

@@ -1,4 +1,5 @@
 export type OutputFormat = "jpeg" | "png" | "webp" | "avif";
+export type FormatPreference = "original" | OutputFormat;
 
 export interface CompressionPreset {
   description: string;
@@ -8,7 +9,7 @@ export interface CompressionPreset {
 }
 
 export interface CompressionSettings {
-  format: OutputFormat;
+  format: FormatPreference;
   lossless: boolean;
   quality: number;
 }

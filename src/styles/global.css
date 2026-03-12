@@ -61,22 +61,6 @@
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  html[data-motion="enabled"] [data-reveal] {
-    opacity: 0;
-    transform: translateY(18px);
-    transition:
-      opacity 520ms var(--ease-fluid),
-      transform 520ms var(--ease-fluid);
-    transition-delay: var(--reveal-delay, 0ms);
-  }
-
-  html[data-motion="enabled"] [data-reveal][data-visible="true"] {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

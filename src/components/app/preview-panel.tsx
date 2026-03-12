@@ -60,8 +60,8 @@ export function PreviewPanel({ job }: PreviewPanelProps) {
 
   if (!job) {
     return (
-      <div className="flex flex-1 flex-col">
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 text-[0.9rem] text-muted opacity-60">
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 text-[0.9rem] text-muted opacity-60">
           <Icon className="text-muted" icon="hugeicons:image-01" width={28} />
           <p>Select a file to preview</p>
         </div>
@@ -73,7 +73,7 @@ export function PreviewPanel({ job }: PreviewPanelProps) {
     : null;
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-border border-b px-4 py-3">
         <div className="flex min-w-0 flex-wrap items-center gap-2 text-[0.85rem]">
           <Icon className="text-muted" icon="hugeicons:image-02" width={15} />
@@ -130,7 +130,7 @@ export function PreviewPanel({ job }: PreviewPanelProps) {
         )}
       </div>
 
-      <div className="flex flex-1 items-center justify-center bg-[repeating-conic-gradient(rgba(255,255,255,0.03)_0%_25%,transparent_0%_50%)] p-4 [background-size:20px_20px]">
+      <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-[repeating-conic-gradient(rgba(255,255,255,0.03)_0%_25%,transparent_0%_50%)] p-4 [background-size:20px_20px]">
         {showUrl ? (
           <img
             alt={`${view === "compressed" ? "Compressed" : "Original"} ${job.file.name}`}

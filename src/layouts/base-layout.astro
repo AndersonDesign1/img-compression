@@ -1,17 +1,25 @@
 ---
 import "@/styles/global.css";
+import SiteHead from "@/components/site/site-head.astro";
 import {
-  SITE_ISSUES_URL,
   SITE_LICENSE_URL,
+  SITE_PERSONAL_URL,
   SITE_REPO_URL,
 } from "@/lib/utils/site";
 
 interface Props {
   description: string;
+  fullWidth?: boolean;
+  hideFooter?: boolean;
   title: string;
 }
 
-const { title, description } = Astro.props;
+const {
+  title,
+  description,
+  fullWidth = false,
+  hideFooter = false,
+} = Astro.props;
 const canonical = new URL(
   Astro.url.pathname,
   Astro.site ?? Astro.url
@@ -21,82 +29,43 @@ const currentPath =
     ? Astro.url.pathname.slice(0, -1)
     : Astro.url.pathname;
 const nav = [
-  { href: "/about", label: "About" },
+  { href: "/about", label: "Why I built this" },
   { href: "/changelog", label: "Changelog" },
 ];
-const containerClass = "mx-auto w-[min(1140px,calc(100%-2rem))]";
+const containerClass = "mx-auto w-[min(960px,calc(100%-2rem))]";
 const navLinkClass = (href: string) =>
   [
-    "inline-flex min-h-9 items-center rounded-full px-3 text-sm font-medium transition-colors duration-200",
-    currentPath === href
-      ? "bg-accent-soft text-text"
-      : "text-white/55 hover:bg-white/5 hover:text-text",
+    "inline-flex min-h-8 items-center px-0 text-sm transition-colors duration-200",
+    currentPath === href ? "text-text" : "text-white/55 hover:text-text",
   ].join(" ");
+const contentClass = fullWidth
+  ? "w-full py-0"
+  : [containerClass, "grid gap-12 py-10 sm:gap-14 sm:py-14"].join(" ");
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title}</title>
-    <meta name="description" content={description}>
-    <link rel="canonical" href={canonical}>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap"
-      rel="stylesheet"
-    >
+    <SiteHead title={title} description={description} canonical={canonical} />
   </head>
   <body class="min-h-screen bg-bg-deep font-body text-text">
-    <div
-      class="relative isolate overflow-x-clip bg-[radial-gradient(ellipse_80%_50%_at_50%_-12%,rgb(255_255_255_/_0.06),transparent),var(--color-bg-deep)]"
-    >
-      <div
-        aria-hidden="true"
-        class="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(rgb(255_255_255_/_0.014)_1px,transparent_1px),linear-gradient(90deg,rgb(255_255_255_/_0.014)_1px,transparent_1px)] bg-[size:80px_80px] opacity-20 [mask-image:linear-gradient(180deg,rgb(0_0_0_/_0.6),transparent_60%)]"
-      ></div>
+    <div class="min-h-screen">
       <header
-        class="sticky top-0 z-20 border-b border-white/5 bg-[rgb(7_7_7_/_0.72)] shadow-[0_22px_42px_rgb(0_0_0_/_0.18)] backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-200 data-[scrolled=true]:border-white/10 data-[scrolled=true]:bg-[rgb(7_7_7_/_0.92)] data-[scrolled=true]:shadow-[0_26px_60px_rgb(0_0_0_/_0.34)]"
+        class="sticky top-0 z-20 border-b border-border bg-[rgb(5_5_5_/_0.92)] backdrop-blur-sm"
       >
         <div
           class:list={[
             containerClass,
-            "flex flex-wrap items-center justify-between gap-5 py-4 sm:py-[0.95rem]",
+            "flex items-center justify-between gap-6 py-3",
           ]}
         >
-          <a class="inline-flex items-center gap-4 no-underline" href="/">
-            <span
-              aria-hidden="true"
-              class="inline-flex size-10 items-center justify-center rounded-[0.85rem] border border-white/10 bg-[linear-gradient(180deg,rgb(255_255_255_/_0.06),rgb(255_255_255_/_0.02)),rgb(10_10_10_/_0.9)] text-text shadow-[inset_0_1px_0_rgb(255_255_255_/_0.05),0_14px_24px_rgb(0_0_0_/_0.2)]"
-            >
-              <svg
-                aria-hidden="true"
-                focusable="false"
-                width="18"
-                height="18"
-                viewBox="0 0 18 18"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.2"
-                stroke-linejoin="round"
-              >
-                <path d="M9 2L16 6V12L9 16L2 12V6L9 2Z" />
-              </svg>
-            </span>
-            <span class="flex flex-col gap-0.5">
-              <span
-                class="font-display text-base font-bold tracking-[-0.05em] text-text"
-              >
-                PixelPress
-              </span>
-              <span class="text-[0.72rem] tracking-[0.015em] text-white/55">
-                Local-first batch compression for design-heavy work
-              </span>
-            </span>
+          <a
+            class="font-display text-base tracking-[-0.05em] text-text no-underline"
+            href="/"
+          >
+            PixelPress
           </a>
-          <nav class="flex flex-wrap items-center gap-1" aria-label="Primary">
+          <nav class="flex flex-wrap items-center gap-5" aria-label="Primary">
             {nav.map((item) => (
               /* biome-ignore lint/correctness/useJsxKeyInIterable: Astro iterables do not use React keys. */
               <a
@@ -107,135 +76,80 @@ const navLinkClass = (href: string) =>
                 {item.label}
               </a>
             ))}
-          </nav>
-        </div>
-      </header>
-      <main class="py-0">
-        <div
-          class:list={[
-            containerClass,
-            "grid gap-16 py-16 sm:gap-24 sm:py-20",
-          ]}
-        >
-          <slot />
-        </div>
-      </main>
-      <footer class="border-t border-white/5 bg-[rgb(7_7_7_/_0.94)]">
-        <div
-          class:list={[
-            containerClass,
-            "grid gap-6 py-8 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:py-10",
-          ]}
-        >
-          <div class="max-w-xl">
-            <p
-              class="mb-3 inline-flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/72 before:h-px before:w-7 before:bg-white/30 before:content-['']"
-            >
-              PixelPress
-            </p>
-            <p class="font-display text-[1.08rem] tracking-[-0.03em] text-text">
-              Built because batch image work got old.
-            </p>
-            <p class="mt-3 max-w-[36rem] text-sm leading-7 text-white/52">
-              PixelPress exists because I wanted one local-first tool for the
-              image work that keeps showing up in real projects: exports,
-              handoff assets, screenshots, conversions, and batch cleanup.
-            </p>
-          </div>
-          <div class="grid gap-2 sm:justify-items-end">
             <a
-              class="text-sm text-white/55 transition-colors duration-200 hover:text-text"
+              class="inline-flex min-h-8 items-center px-0 text-sm text-white/55 transition-colors duration-200 hover:text-text"
               href={SITE_REPO_URL}
               target="_blank"
               rel="noreferrer"
             >
-              View source
+              GitHub
             </a>
             <a
-              class="text-sm text-white/55 transition-colors duration-200 hover:text-text"
-              href={SITE_ISSUES_URL}
+              class="inline-flex min-h-8 items-center px-0 text-sm text-white/55 transition-colors duration-200 hover:text-text"
+              href={SITE_PERSONAL_URL}
               target="_blank"
               rel="noreferrer"
             >
-              Raise an issue
+              Anderson Joseph
             </a>
-            <a
-              class="text-sm text-white/55 transition-colors duration-200 hover:text-text"
-              href={SITE_LICENSE_URL}
-              target="_blank"
-              rel="noreferrer"
-            >
-              MIT license
-            </a>
-          </div>
+          </nav>
         </div>
-      </footer>
+      </header>
+      <main class="py-0">
+        <div class={contentClass}><slot /></div>
+      </main>
+      {!hideFooter && (
+          <footer class="border-border border-t">
+            <div
+              class:list={[
+                containerClass,
+                "grid gap-4 py-6 text-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start",
+              ]}
+            >
+              <div class="max-w-[36rem] space-y-1">
+                <p class="text-white/72">
+                  Built by
+                  <a
+                    class="text-text underline decoration-white/20 underline-offset-4 hover:decoration-white/60"
+                    href={SITE_PERSONAL_URL}
+                    rel="noreferrer"
+                    target="_blank"
+                    >Anderson Joseph</a
+                  >.
+                </p>
+                <p class="text-white/50">
+                  A small local-first image tool. The app is the point.
+                </p>
+              </div>
+              <div class="grid gap-2 sm:justify-items-end">
+                <a
+                  class="text-white/55 transition-colors duration-200 hover:text-text"
+                  href={SITE_REPO_URL}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  GitHub
+                </a>
+                <a
+                  class="text-white/55 transition-colors duration-200 hover:text-text"
+                  href={SITE_PERSONAL_URL}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  andersonjoseph.com
+                </a>
+                <a
+                  class="text-white/55 transition-colors duration-200 hover:text-text"
+                  href={SITE_LICENSE_URL}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  MIT license
+                </a>
+              </div>
+            </div>
+          </footer>
+      )}
     </div>
-    <script is:inline>
-      const reducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-      ).matches;
-      const header = document.querySelector("header");
-      const root = document.documentElement;
-
-      const syncScrollState = () => {
-        header?.setAttribute(
-          "data-scrolled",
-          window.scrollY > 12 ? "true" : "false"
-        );
-      };
-
-      syncScrollState();
-      window.addEventListener("scroll", syncScrollState, { passive: true });
-
-      if (!reducedMotion) {
-        root.dataset.motion = "enabled";
-
-        const heroItems = Array.from(
-          document.querySelectorAll('[data-reveal-group="hero"] [data-reveal]')
-        );
-
-        for (const [index, item] of heroItems.entries()) {
-          item.style.setProperty("--reveal-delay", `${index * 95}ms`);
-        }
-
-        requestAnimationFrame(() => {
-          for (const item of heroItems) {
-            item.dataset.visible = "true";
-          }
-        });
-
-        const scrollItems = Array.from(
-          document.querySelectorAll(
-            '[data-reveal-group="scroll"] [data-reveal]'
-          )
-        );
-
-        for (const [index, item] of scrollItems.entries()) {
-          item.style.setProperty("--reveal-delay", `${(index % 3) * 80}ms`);
-        }
-
-        const observer = new IntersectionObserver(
-          (entries) => {
-            for (const entry of entries) {
-              if (!entry.isIntersecting) {
-                continue;
-              }
-
-              entry.target.dataset.visible = "true";
-              observer.unobserve(entry.target);
-            }
-          },
-          {
-            threshold: 0.16,
-            rootMargin: "0px 0px -10% 0px",
-          }
-        );
-
-        for (const item of scrollItems) {
-          observer.observe(item);
-        }
-      }
-    </script>
   </body>
 </html>

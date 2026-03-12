@@ -2,11 +2,10 @@ import { Icon } from "@iconify/react";
 import { useEffect, useRef, useState } from "react";
 
 interface DropzoneProps {
-  compact?: boolean;
   onFiles: (files: File[]) => void;
 }
 
-export function Dropzone({ onFiles, compact = false }: DropzoneProps) {
+export function Dropzone({ onFiles }: DropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -44,49 +43,6 @@ export function Dropzone({ onFiles, compact = false }: DropzoneProps) {
     };
   }, [onFiles]);
 
-  if (compact) {
-    return (
-      <button
-        className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-[0.6rem] border border-border bg-white/4 px-3 py-2 font-medium text-[0.82rem] text-muted-strong hover:border-border-strong hover:bg-white/8 data-[dragging=true]:border-text data-[dragging=true]:bg-accent-soft"
-        data-dragging={isDragging}
-        onClick={() => inputRef.current?.click()}
-        onDragLeave={(event) => {
-          event.preventDefault();
-          if (
-            event.currentTarget.contains(event.relatedTarget as Node | null)
-          ) {
-            return;
-          }
-          setIsDragging(false);
-        }}
-        onDragOver={(event) => {
-          event.preventDefault();
-          setIsDragging(true);
-        }}
-        onDrop={(event) => {
-          event.preventDefault();
-          setIsDragging(false);
-          onFiles(Array.from(event.dataTransfer.files));
-        }}
-        type="button"
-      >
-        <Icon icon="hugeicons:add-01" width={15} />
-        Add files
-        <input
-          accept="image/*"
-          className="hidden"
-          multiple
-          onChange={(event) => {
-            onFiles(Array.from(event.target.files ?? []));
-            event.currentTarget.value = "";
-          }}
-          ref={inputRef}
-          type="file"
-        />
-      </button>
-    );
-  }
-
   return (
     <>
       <button
@@ -122,7 +78,7 @@ export function Dropzone({ onFiles, compact = false }: DropzoneProps) {
           Drop images here
         </span>
         <span className="m-0 text-[0.88rem] text-muted">
-          or paste from clipboard
+          Runs locally. Paste or select files.
         </span>
 
         <span className="mt-4 inline-flex items-center gap-2 rounded-[0.75rem] border border-border-strong bg-white/6 px-4 py-2.5 font-medium text-[0.92rem] text-text hover:-translate-y-px hover:bg-white/10">

@@ -2,7 +2,7 @@
 
 import { compressImageData } from "../codecs/compress";
 import { buildOutputName } from "../utils/filenames";
-import { outputExtension } from "../utils/format";
+import { outputExtension, resolveOutputFormat } from "../utils/format";
 import type {
   WorkerCompressRequest,
   WorkerCompressResponse,
@@ -58,13 +58,17 @@ self.onmessage = async (event: MessageEvent<WorkerCompressRequest>) => {
   const { id, file, settings } = event.data;
 
   try {
+    const outputFormat = resolveOutputFormat(file, settings.format);
     postProgress(id, 20, "decoding");
     const imageData = await fileToImageData(file);
     postProgress(id, 60, "encoding");
-    const bytesBuffer = await compressImageData(imageData, settings);
-    const requestedExtension = outputExtension(settings.format);
+    const bytesBuffer = await compressImageData(imageData, {
+      ...settings,
+      format: outputFormat,
+    });
+    const requestedExtension = outputExtension(outputFormat);
     const outputName = buildOutputName(file.name, requestedExtension);
-    const mime = mimeTypeForFormat(settings.format);
+    const mime = mimeTypeForFormat(outputFormat);
     const output = new Blob([bytesBuffer], { type: mime });
     const message: WorkerCompressResponse = {
       id,

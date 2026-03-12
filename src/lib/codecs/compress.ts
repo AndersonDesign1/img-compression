@@ -4,7 +4,7 @@ export async function compressImageData(
   imageData: ImageData,
   settings: CompressionSettings
 ): Promise<ArrayBuffer> {
-  const format: OutputFormat = settings.format;
+  const format = settings.format as OutputFormat;
 
   if (format === "webp") {
     const { encode } = await import("@jsquash/webp");
