@@ -1,36 +1,53 @@
-# PixelPress (Astro + React Image Compressor)
+# PixelPress
 
-PixelPress is a single-repo Astro project with:
+PixelPress is a local-first image compression app built with Astro, React, and browser-side codecs. You drop in a batch of images, the work happens in a web worker, and you get to compare the results before downloading anything.
 
-- Astro marketing/content pages (`/`, `/features`, `/about`, `/changelog`, `/docs`)
-- A React + TypeScript compressor app at `/app`
-- Browser-side compression via jSquash codecs inside Web Workers
-- Tailwind CSS v4 styling
-- Static-first deployment target for Vercel
+There is no upload step and no backend doing secret image work somewhere else. The whole point is to keep it simple: run it locally, compress a pile of images, keep the version that actually looks worth keeping, and move on.
 
-## Why this architecture
+## What the app does
 
-- **Cheap hosting:** static-first Astro output with no image-processing backend.
-- **Privacy-first:** images are compressed entirely in-browser and are never uploaded.
-- **Performance:** heavy codec work is pushed to workers and loaded lazily.
+- Compresses images in the browser with `@jsquash` codecs
+- Optimizes PNGs with `oxipng`
+- Generates multiple candidate variants when that helps
+- Lets you compare the original and compressed output side by side
+- Keeps the best result by default, but still lets you inspect other versions
+- Exports one file at a time or bundles the best results into a zip
 
-## Project structure
+## Tech stack
 
-- `src/layouts` shared Astro shell
-- `src/pages` marketing pages + `/app`
-- `src/content/changelog` markdown changelog entries
-- `src/components/marketing` reusable content components
-- `src/components/app` React compressor UI components
-- `src/lib/codecs` lazy-loaded jSquash adapters
-- `src/lib/workers` worker pipeline
-- `src/lib/utils` types, presets, storage helpers
-- `src/styles` global Tailwind styles
+- Astro 6 for the site shell and routes
+- React 19 for the compression workspace
+- Tailwind CSS v4 for styling
+- Web Workers for codec work
+- Vercel for deployment
+- Bun for installs and scripts
+
+## Project shape
+
+- `src/pages` contains the Astro routes
+- `src/components/app` contains the React compression UI
+- `src/lib/workers` contains the compression worker
+- `src/lib/codecs` contains the codec helpers
+- `src/lib/utils` contains shared types, presets, formatting, and storage helpers
+- `src/content/changelog` contains changelog entries
+
+The app now lives at `/`. The old `/app` path is redirected for compatibility.
+
+## Getting started
+
+Use Node 24 and Bun.
+
+```bash
+node --version
+bun install
+bun run dev
+```
+
+The dev server runs on `http://localhost:4321`.
 
 ## Commands
 
 ```bash
-node --version # use Node 22
-bun install
 bun run dev
 bun run check
 bun run build
@@ -39,8 +56,11 @@ bun run preview
 
 ## Notes
 
-- Astro 6 runs on Node 22 in this repo, while Bun remains the package manager/task runner.
-- Tailwind is configured with the Vite plugin (`@tailwindcss/vite`), so there is no `tailwind.config.mjs` file for the current setup.
-- No server-side image processing is used.
-- Presets included: Lossless, High Quality, WebP, AVIF, Blog Optimized, Social Optimized.
-- Last-used settings are persisted in `localStorage`.
+- `bun run check` runs both linting and `astro check`
+- Compression stays client-side
+- Last-used settings are stored in `localStorage`
+- SharedArrayBuffer support is enabled in production through COOP/COEP headers in `vercel.json`
+
+## Why it exists
+
+This started from a pretty ordinary annoyance: a lot of image tools are either too limited, too fussy, or too eager to push you toward an upload flow. PixelPress is meant to feel lighter than that. Open it, drop files in, compare the outputs, download the ones you want, done.
