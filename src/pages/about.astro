@@ -1,11 +1,66 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
+import BaseLayout from "@/layouts/base-layout.astro";
+import { SITE_PERSONAL_URL, SITE_REPO_URL } from "@/lib/utils/site";
 ---
-<BaseLayout title="About — PixelPress" description="About the PixelPress browser image compressor.">
-  <article class="prose-shell surface-panel">
-    <h1>About PixelPress</h1>
-    <p>PixelPress is a static-first Astro app with a focused React compressor experience.</p>
-    <p>We designed it to keep hosting cheap, preserve user privacy, and avoid server-side processing by default.</p>
-    <p>The compression pipeline runs inside browser workers using jSquash codecs so large batches do not block the UI thread.</p>
-  </article>
+
+<BaseLayout
+  title="About — PixelPress"
+  description="Why PixelPress exists and why I still use it."
+>
+  <section class="grid gap-8">
+    <div class="max-w-[42rem] space-y-4">
+      <p class="text-[0.72rem] uppercase tracking-[0.18em] text-white/40">
+        Why I built this
+      </p>
+      <h1
+        class="max-w-[15ch] font-display text-[clamp(2rem,4vw,3.2rem)] leading-[1.02] tracking-[-0.05em] text-text"
+      >
+        I just wanted this to feel easier.
+      </h1>
+      <p class="text-[1rem] leading-7 text-white/58">
+        TinyPNG is handy until you hit the free limit. Squash was great for a
+        while, but it is no longer maintained. I wanted one local tool that
+        could chew through a bigger batch without making me think about limits
+        before I even started.
+      </p>
+      <p class="text-[1rem] leading-7 text-white/58">
+        PixelPress runs in the browser, keeps the work on your machine, and now
+        lets you compare versions side by side instead of guessing which one to
+        keep.
+      </p>
+      <div class="flex flex-wrap gap-4 text-sm text-white/68">
+        <a
+          class="underline decoration-white/15 underline-offset-4 hover:decoration-white/55 hover:text-text"
+          href={SITE_REPO_URL}
+          target="_blank"
+          rel="noreferrer"
+        >
+          GitHub
+        </a>
+        <a
+          class="underline decoration-white/15 underline-offset-4 hover:decoration-white/55 hover:text-text"
+          href={SITE_PERSONAL_URL}
+          target="_blank"
+          rel="noreferrer"
+        >
+          andersonjoseph.com
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid gap-4 border-t border-border pt-5">
+    <p class="text-[0.72rem] uppercase tracking-[0.18em] text-white/40">
+      What matters
+    </p>
+    <div
+      class="grid gap-3 text-[0.98rem] leading-7 text-white/58 sm:grid-cols-2"
+    >
+      <p>
+        Local-first. Batch compression. Side-by-side checks. Format conversion
+        when you actually need it.
+      </p>
+      <p>Built with jSquash, web workers, Astro, and a small React layer.</p>
+    </div>
+  </section>
 </BaseLayout>

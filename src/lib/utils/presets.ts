@@ -1,40 +1,24 @@
-import type { CompressionPreset } from './types';
+import type { CompressionPreset } from "./types";
 
 export const presets: CompressionPreset[] = [
   {
-    id: 'lossless',
-    label: 'Lossless',
-    description: 'Preserve quality with PNG output.',
-    settings: { format: 'png', quality: 100 }
+    id: "keep-quality",
+    label: "Keep quality",
+    description:
+      "Start with the safer option and trim size without pushing it.",
+    settings: { format: "original", quality: 90, lossless: false },
   },
   {
-    id: 'high-quality',
-    label: 'High Quality',
-    description: 'Great visual quality with JPEG.',
-    settings: { format: 'jpeg', quality: 88 }
+    id: "smaller-file",
+    label: "Smaller file",
+    description:
+      "Push a bit harder when you care more about size than perfect detail.",
+    settings: { format: "original", quality: 78, lossless: false },
   },
   {
-    id: 'webp',
-    label: 'WebP',
-    description: 'Balanced modern format for web usage.',
-    settings: { format: 'webp', quality: 82 }
+    id: "modern-web",
+    label: "Modern web",
+    description: "Make a WebP version for the web when smaller matters more.",
+    settings: { format: "webp", quality: 82, lossless: false },
   },
-  {
-    id: 'avif',
-    label: 'AVIF',
-    description: 'Maximum compression for modern browsers.',
-    settings: { format: 'avif', quality: 60 }
-  },
-  {
-    id: 'blog',
-    label: 'Blog Optimized',
-    description: 'Fast-loading article images.',
-    settings: { format: 'webp', quality: 74 }
-  },
-  {
-    id: 'social',
-    label: 'Social Optimized',
-    description: 'High-impact visuals tuned for social feeds.',
-    settings: { format: 'jpeg', quality: 80 }
-  }
 ];

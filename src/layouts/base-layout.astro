@@ -1,0 +1,155 @@
+---
+import "@/styles/global.css";
+import SiteHead from "@/components/site/site-head.astro";
+import {
+  SITE_LICENSE_URL,
+  SITE_PERSONAL_URL,
+  SITE_REPO_URL,
+} from "@/lib/utils/site";
+
+interface Props {
+  description: string;
+  fullWidth?: boolean;
+  hideFooter?: boolean;
+  title: string;
+}
+
+const {
+  title,
+  description,
+  fullWidth = false,
+  hideFooter = false,
+} = Astro.props;
+const canonical = new URL(
+  Astro.url.pathname,
+  Astro.site ?? Astro.url
+).toString();
+const currentPath =
+  Astro.url.pathname !== "/" && Astro.url.pathname.endsWith("/")
+    ? Astro.url.pathname.slice(0, -1)
+    : Astro.url.pathname;
+const nav = [
+  { href: "/about", label: "Why I built this" },
+  { href: "/changelog", label: "Changelog" },
+];
+const containerClass = "mx-auto w-[min(960px,calc(100%-2rem))]";
+const navLinkClass = (href: string) =>
+  [
+    "inline-flex min-h-8 items-center px-0 text-sm transition-colors duration-200",
+    currentPath === href ? "text-text" : "text-white/55 hover:text-text",
+  ].join(" ");
+const contentClass = fullWidth
+  ? "w-full py-0"
+  : [containerClass, "grid gap-12 py-10 sm:gap-14 sm:py-14"].join(" ");
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <SiteHead title={title} description={description} canonical={canonical} />
+  </head>
+  <body class="min-h-screen bg-bg-deep font-body text-text">
+    <div class="min-h-screen">
+      <header
+        class="sticky top-0 z-20 border-b border-border bg-[rgb(5_5_5_/_0.92)] backdrop-blur-sm"
+      >
+        <div
+          class:list={[
+            containerClass,
+            "flex items-center justify-between gap-6 py-3",
+          ]}
+        >
+          <a
+            class="font-display text-base tracking-[-0.05em] text-text no-underline"
+            href="/"
+          >
+            PixelPress
+          </a>
+          <nav class="flex flex-wrap items-center gap-5" aria-label="Primary">
+            {nav.map((item) => (
+              /* biome-ignore lint/correctness/useJsxKeyInIterable: Astro iterables do not use React keys. */
+              <a
+                aria-current={currentPath === item.href ? "page" : undefined}
+                class={navLinkClass(item.href)}
+                href={item.href}
+              >
+                {item.label}
+              </a>
+            ))}
+            <a
+              class="inline-flex min-h-8 items-center px-0 text-sm text-white/55 transition-colors duration-200 hover:text-text"
+              href={SITE_REPO_URL}
+              target="_blank"
+              rel="noreferrer"
+            >
+              GitHub
+            </a>
+            <a
+              class="inline-flex min-h-8 items-center px-0 text-sm text-white/55 transition-colors duration-200 hover:text-text"
+              href={SITE_PERSONAL_URL}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Anderson Joseph
+            </a>
+          </nav>
+        </div>
+      </header>
+      <main class="py-0">
+        <div class={contentClass}><slot /></div>
+      </main>
+      {!hideFooter && (
+          <footer class="border-border border-t">
+            <div
+              class:list={[
+                containerClass,
+                "grid gap-4 py-6 text-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start",
+              ]}
+            >
+              <div class="max-w-[36rem] space-y-1">
+                <p class="text-white/72">
+                  Built by
+                  <a
+                    class="text-text underline decoration-white/20 underline-offset-4 hover:decoration-white/60"
+                    href={SITE_PERSONAL_URL}
+                    rel="noreferrer"
+                    target="_blank"
+                    >Anderson Joseph</a
+                  >.
+                </p>
+                <p class="text-white/50">
+                  A small local-first image tool that stays out of the way.
+                </p>
+              </div>
+              <div class="grid gap-2 sm:justify-items-end">
+                <a
+                  class="text-white/55 transition-colors duration-200 hover:text-text"
+                  href={SITE_REPO_URL}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  GitHub
+                </a>
+                <a
+                  class="text-white/55 transition-colors duration-200 hover:text-text"
+                  href={SITE_PERSONAL_URL}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  andersonjoseph.com
+                </a>
+                <a
+                  class="text-white/55 transition-colors duration-200 hover:text-text"
+                  href={SITE_LICENSE_URL}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  MIT license
+                </a>
+              </div>
+            </div>
+          </footer>
+      )}
+    </div>
+  </body>
+</html>

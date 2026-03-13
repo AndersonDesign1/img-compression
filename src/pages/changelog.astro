@@ -1,31 +1,60 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import { getCollection, render } from 'astro:content';
+import { getCollection, render } from "astro:content";
+import BaseLayout from "@/layouts/base-layout.astro";
+import { SITE_REPO_URL } from "@/lib/utils/site";
 
-const entries = (await getCollection('changelog')).sort(
+const entries = (await getCollection("changelog")).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime()
 );
 const renderedEntries = await Promise.all(
   entries.map(async (entry) => ({
     ...entry,
-    Content: (await render(entry)).Content
+    Content: (await render(entry)).Content,
   }))
 );
 ---
-<BaseLayout title="Changelog — PixelPress" description="Product and release updates for PixelPress.">
-  <section class="page-stack">
-    <div class="page-copy">
-      <p class="section-label">Release notes</p>
-      <h1 class="page-title">Small improvements, documented clearly.</h1>
-      <p class="page-intro">A running log of what changed in the product, with an emphasis on stability, privacy, and workflow quality instead of feature noise.</p>
+
+<BaseLayout
+  title="Changelog — PixelPress"
+  description="Small updates, fixes, and quality-of-life changes in PixelPress."
+>
+  <section class="grid gap-8">
+    <div class="max-w-[40rem] space-y-4">
+      <p class="text-[0.72rem] uppercase tracking-[0.18em] text-white/40">
+        Changelog
+      </p>
+      <h1
+        class="font-display text-[clamp(2rem,4vw,3.2rem)] leading-[1.02] tracking-[-0.05em] text-text"
+      >
+        Small fixes, quieter improvements.
+      </h1>
+      <p class="text-[1rem] leading-7 text-white/58">
+        Mostly cleanup, app work, and the kind of changes you notice because
+        something stops being annoying. The full history is still on GitHub.
+      </p>
+      <a
+        class="text-sm text-white/68 underline decoration-white/15 underline-offset-4 hover:decoration-white/55 hover:text-text"
+        href={SITE_REPO_URL}
+        target="_blank"
+        rel="noreferrer"
+      >
+        View the repo
+      </a>
     </div>
-    <div class="timeline-list">
+    <div class="grid gap-0 border-t border-border">
       {renderedEntries.map((entry) => (
-        <article class="timeline-entry surface-panel">
-          <p class="timeline-meta">{entry.data.version} · {entry.data.date.toISOString().slice(0, 10)}</p>
-          <h2 class="timeline-title">{entry.data.summary}</h2>
-          <div class="timeline-body">
-          <entry.Content />
+        /* biome-ignore lint/correctness/useJsxKeyInIterable: Astro iterables do not use React keys. */
+        <article class="grid gap-3 border-border border-b py-5">
+          <p class="text-[0.75rem] text-white/40">
+            {entry.data.version} · {entry.data.date.toISOString().slice(0, 10)}
+          </p>
+          <h2 class="font-display text-[1.05rem] text-text tracking-[-0.03em]">
+            {entry.data.summary}
+          </h2>
+          <div
+            class="text-[0.95rem] text-white/56 leading-7 [&_li]:ml-5 [&_li]:text-white/56 [&_li]:leading-7 [&_p]:text-white/56 [&_p]:leading-7 [&_ul]:pl-0"
+          >
+            <entry.Content />
           </div>
         </article>
       ))}
