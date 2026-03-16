@@ -9,18 +9,6 @@ async function encodeToPng(imageData: ImageData): Promise<ArrayBuffer> {
   return encode(imageData);
 }
 
-async function optimisePng(
-  data: ArrayBuffer,
-  level: number
-): Promise<ArrayBuffer> {
-  const { optimise } = await import("@jsquash/oxipng");
-  return optimise(data, {
-    interlace: false,
-    level,
-    optimiseAlpha: true,
-  });
-}
-
 export async function compressImageData(
   imageData: ImageData,
   settings: CompressionSettings & { format: OutputFormat },
@@ -29,13 +17,14 @@ export async function compressImageData(
   const format = settings.format;
 
   if (strategy === "oxipng") {
-    const pngBuffer = await encodeToPng(imageData);
-    return optimisePng(pngBuffer, settings.lossless ? 4 : 2);
+    // OxiPNG's wasm runtime has been unstable on large browser-side inputs in
+    // production, especially for the exact Cloudflare-served path the app uses.
+    // We keep PNG export available by falling back to plain PNG encode here.
+    return encodeToPng(imageData);
   }
 
   if (strategy === "png-encode" || format === "png") {
-    const pngBuffer = await encodeToPng(imageData);
-    return optimisePng(pngBuffer, settings.lossless ? 3 : 2);
+    return encodeToPng(imageData);
   }
 
   if (format === "webp") {
@@ -69,7 +58,7 @@ export async function compressImageData(
 
 export function optimiseSourcePng(
   sourceBuffer: ArrayBuffer,
-  lossless: boolean
+  _lossless: boolean
 ): Promise<ArrayBuffer> {
-  return optimisePng(sourceBuffer, lossless ? 4 : 2);
+  return Promise.resolve(sourceBuffer);
 }
