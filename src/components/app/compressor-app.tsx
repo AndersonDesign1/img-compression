@@ -28,6 +28,48 @@ const defaultSettings: CompressionSettings = {
   lossless: false,
 };
 
+const genericWorkerFailureMessage =
+  "The compression worker stopped before it could finish.";
+
+function formatWorkerRuntimeIssue(
+  error: string,
+  detail?: string,
+  context?: string
+) {
+  const parts = [error.trim()];
+
+  if (context) {
+    parts.push(`(${context})`);
+  }
+
+  if (detail?.trim()) {
+    parts.push(detail.trim());
+  }
+
+  return parts.join(" ").trim();
+}
+
+function failProcessingJobs(
+  current: CompressionJob[],
+  error: string
+): CompressionJob[] {
+  return current.map((job) => ({
+    ...job,
+    error,
+    status: job.status === "processing" ? "error" : job.status,
+    variants: job.variants.map((variant) =>
+      variant.status === "processing"
+        ? {
+            ...variant,
+            error,
+            progress: 100,
+            status: "error" as const,
+          }
+        : variant
+    ),
+  }));
+}
+
 function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
@@ -289,6 +331,23 @@ function updateVariantFromWorker(
   variant: CompressionVariant,
   event: WorkerCompressResponse
 ): CompressionVariant {
+  if (event.kind === "runtime-error") {
+    if (event.variantId && variant.id !== event.variantId) {
+      return variant;
+    }
+
+    if (variant.status !== "processing") {
+      return variant;
+    }
+
+    return {
+      ...variant,
+      error: formatWorkerRuntimeIssue(event.error, event.detail),
+      progress: 100,
+      status: "error",
+    };
+  }
+
   if (variant.id !== event.variantId) {
     return variant;
   }
@@ -329,6 +388,30 @@ function applyWorkerEventToJob(
   job: CompressionJob,
   event: WorkerCompressResponse
 ): CompressionJob {
+  if (event.kind === "runtime-error") {
+    if (event.sourceId && job.id !== event.sourceId) {
+      return job;
+    }
+
+    const error = formatWorkerRuntimeIssue(event.error, event.detail);
+    const variants = job.variants.map((variant) =>
+      updateVariantFromWorker(job, variant, event)
+    );
+
+    return {
+      ...job,
+      activeVariantId: job.activeVariantId,
+      bestVariantId: getBestVariantId(variants),
+      error,
+      status:
+        job.status === "processing" ||
+        variants.some((variant) => variant.status === "error")
+          ? "error"
+          : job.status,
+      variants,
+    };
+  }
+
   if (job.id !== event.sourceId) {
     return job;
   }
@@ -438,32 +521,43 @@ export default function CompressorApp() {
       workerRef.current.onmessage = (
         event: MessageEvent<WorkerCompressResponse>
       ) => {
+        if (event.data.kind === "runtime-error") {
+          const error = formatWorkerRuntimeIssue(
+            event.data.error,
+            event.data.detail
+          );
+          console.error("[PixelPress] Worker runtime error", event.data);
+          setGlobalError(error);
+        }
+
         setJobs((current) =>
           current.map((job) => applyWorkerEventToJob(job, event.data))
         );
       };
-      workerRef.current.onerror = () => {
-        setGlobalError(
-          "The compression worker stopped before it could finish."
+      workerRef.current.onerror = (event) => {
+        const error = formatWorkerRuntimeIssue(
+          event.message || genericWorkerFailureMessage,
+          undefined,
+          [
+            event.filename ? `file: ${event.filename}` : null,
+            event.lineno ? `line: ${event.lineno}` : null,
+            event.colno ? `column: ${event.colno}` : null,
+          ]
+            .filter(Boolean)
+            .join(", ") || undefined
         );
-        setJobs((current) =>
-          current.map((job) => ({
-            ...job,
-            error: "The compression worker stopped before it could finish.",
-            status: job.status === "processing" ? "error" : job.status,
-            variants: job.variants.map((variant) =>
-              variant.status === "processing"
-                ? {
-                    ...variant,
-                    error:
-                      "The compression worker stopped before it could finish.",
-                    progress: 100,
-                    status: "error" as const,
-                  }
-                : variant
-            ),
-          }))
-        );
+
+        console.error("[PixelPress] Worker onerror", event);
+        setGlobalError(error);
+        setJobs((current) => failProcessingJobs(current, error));
+      };
+      workerRef.current.onmessageerror = (event) => {
+        const error =
+          "The compression worker sent a message the app could not read.";
+
+        console.error("[PixelPress] Worker onmessageerror", event);
+        setGlobalError(error);
+        setJobs((current) => failProcessingJobs(current, error));
       };
     }
     return workerRef.current;

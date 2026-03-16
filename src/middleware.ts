@@ -5,6 +5,8 @@ export const onRequest = defineMiddleware(async (_, next) => {
 
   response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
   response.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+  response.headers.set("Cross-Origin-Resource-Policy", "same-origin");
+  response.headers.set("Origin-Agent-Cluster", "?1");
 
   return response;
 });

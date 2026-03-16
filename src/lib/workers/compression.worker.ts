@@ -12,6 +12,7 @@ import type {
   OutputFormat,
   WorkerCompressRequest,
   WorkerCompressResponse,
+  WorkerRuntimeIssue,
 } from "../utils/types";
 
 function postProgress(
@@ -44,6 +45,23 @@ function mimeTypeForFormat(format: OutputFormat) {
   }
 
   return "image/jpeg";
+}
+
+function postRuntimeIssue(
+  error: string,
+  detail?: string,
+  sourceId?: string,
+  variantId?: string
+) {
+  const message: WorkerRuntimeIssue = {
+    detail,
+    error,
+    kind: "runtime-error",
+    sourceId,
+    variantId,
+  };
+
+  self.postMessage(message);
 }
 
 async function fileToImageData(file: File): Promise<ImageData> {
@@ -144,3 +162,32 @@ self.onmessage = async (event: MessageEvent<WorkerCompressRequest>) => {
     self.postMessage(message);
   }
 };
+
+self.addEventListener("error", (event) => {
+  postRuntimeIssue(
+    event.message || "The compression worker crashed unexpectedly.",
+    [
+      event.filename ? `file: ${event.filename}` : null,
+      event.lineno ? `line: ${event.lineno}` : null,
+      event.colno ? `column: ${event.colno}` : null,
+    ]
+      .filter(Boolean)
+      .join(", ") || undefined
+  );
+});
+
+self.addEventListener("unhandledrejection", (event) => {
+  const reason = event.reason;
+  let error = "The compression worker hit an unhandled rejection.";
+
+  if (reason instanceof Error) {
+    error = reason.message;
+  } else if (typeof reason === "string") {
+    error = reason;
+  }
+
+  const detail =
+    reason instanceof Error && reason.stack ? reason.stack : undefined;
+
+  postRuntimeIssue(error, detail);
+});

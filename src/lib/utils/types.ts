@@ -99,7 +99,16 @@ export interface WorkerCompressError {
   variantId: string;
 }
 
+export interface WorkerRuntimeIssue {
+  detail?: string;
+  error: string;
+  kind: "runtime-error";
+  sourceId?: string;
+  variantId?: string;
+}
+
 export type WorkerCompressResponse =
   | WorkerCompressProgress
   | WorkerCompressSuccess
-  | WorkerCompressError;
+  | WorkerCompressError
+  | WorkerRuntimeIssue;
