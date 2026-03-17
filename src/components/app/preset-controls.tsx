@@ -172,10 +172,11 @@ function FineTuneContent({
                     onChange({
                       ...settings,
                       lossless: true,
+                      pngColors: mode.value === "compressed" ? 128 : 256,
                       pngMode: mode.value,
                       quality:
                         mode.value === "compressed"
-                          ? Math.min(settings.quality, 92)
+                          ? Math.min(settings.quality, 78)
                           : 100,
                     })
                   }

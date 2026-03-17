@@ -31,11 +31,12 @@ async function quantizePng(
 
   try {
     instance.set_max_colors(colors);
-    instance.set_quality(Math.max(0, quality - 10), quality);
-    instance.set_speed(4);
+    instance.set_quality(Math.max(0, quality - 20), quality);
+    instance.set_speed(3);
 
     const output = instance.process(image);
-    return Uint8Array.from(output).buffer;
+    const quantized = Uint8Array.from(output).buffer;
+    return optimisePng(quantized);
   } finally {
     image.free();
     instance.free();

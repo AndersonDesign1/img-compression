@@ -87,6 +87,30 @@ function variantSummary(variant: CompressionVariant, originalSize: number) {
   };
 }
 
+function formatUpgradeHint(
+  job: CompressionJob,
+  variant: CompressionVariant | null
+) {
+  if (
+    !(variant?.output && variant.sizeDelta !== null && variant.sizeDelta < 0)
+  ) {
+    return null;
+  }
+
+  if (variant.format === "webp" || variant.format === "avif") {
+    return null;
+  }
+
+  const savings = savingsPercent(variant.sizeDelta, job.file.size);
+  if (savings >= 10) {
+    return null;
+  }
+
+  const sourceLabel = variantFormatLabel(variant.format, variant.strategy);
+
+  return `${sourceLabel} only saved ${savings}%. Try WebP or AVIF if you want a much smaller export.`;
+}
+
 function compareImage(src: string, alt: string) {
   return (
     <div className="flex h-full w-full items-center justify-center p-4">
@@ -159,6 +183,7 @@ export function PreviewPanel({ job, onSelectVariant }: PreviewPanelProps) {
     activeOutputUrl &&
     activeVariant?.output
   );
+  const upgradeHint = formatUpgradeHint(job, activeVariant ?? bestVariant);
   const compareContent =
     compareReady && originalUrl && activeOutputUrl ? (
       <div className="h-full w-full overflow-hidden p-4">
@@ -232,6 +257,11 @@ export function PreviewPanel({ job, onSelectVariant }: PreviewPanelProps) {
           {activeVariant?.note ? (
             <p className="text-[0.76rem] text-white/45 leading-5">
               {activeVariant.note}
+            </p>
+          ) : null}
+          {upgradeHint ? (
+            <p className="text-[0.76rem] text-amber-300/90 leading-5">
+              {upgradeHint}
             </p>
           ) : null}
         </div>
