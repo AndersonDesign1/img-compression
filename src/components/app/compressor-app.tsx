@@ -446,10 +446,12 @@ export default function CompressorApp() {
     () => loadSettings() ?? defaultSettings
   );
   const [activePresetId, setActivePresetId] = useState<string | null>(null);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [jobs, setJobs] = useState<CompressionJob[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [globalError, setGlobalError] = useState("");
   const addFilesInputRef = useRef<HTMLInputElement>(null);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
   const jobsRef = useRef<CompressionJob[]>([]);
   const workerRef = useRef<Worker | null>(null);
   const settingsRef = useRef(settings);
@@ -461,6 +463,22 @@ export default function CompressorApp() {
   useEffect(() => {
     jobsRef.current = jobs;
   }, [jobs]);
+
+  useEffect(() => {
+    function handlePointerDown(event: PointerEvent) {
+      if (!exportMenuRef.current?.contains(event.target as Node)) {
+        setExportMenuOpen(false);
+      }
+    }
+
+    if (exportMenuOpen) {
+      window.addEventListener("pointerdown", handlePointerDown);
+    }
+
+    return () => {
+      window.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [exportMenuOpen]);
 
   const selectedJob = useMemo(
     () => jobs.find((job) => job.id === selectedId),
@@ -711,6 +729,7 @@ export default function CompressorApp() {
       return;
     }
 
+    setExportMenuOpen(false);
     const nextSettings = buildSettingsForFormat(selectedJobSettings, format);
     handleSettingsChange(nextSettings);
     queueCompression(selectedJob.id, nextSettings, null, false);
@@ -859,32 +878,54 @@ export default function CompressorApp() {
           quality or lossless details.
         </p>
         <div className="ml-auto flex flex-wrap items-center gap-2">
-          <label className="inline-flex items-center gap-2 rounded-[0.7rem] border border-border bg-white/[0.03] px-3 py-1.5 text-[0.82rem] text-muted-strong">
-            <span className="whitespace-nowrap text-white/55">Export</span>
-            <span className="relative">
-              <select
-                className="min-w-[9.5rem] appearance-none rounded-[0.55rem] border border-white/10 bg-white/[0.04] px-3 py-1.5 pr-9 font-medium text-text outline-none transition hover:border-white/18 hover:bg-white/[0.07] disabled:cursor-not-allowed disabled:opacity-45"
-                disabled={!selectedJob || isProcessing}
-                onChange={(event) =>
-                  handleTopFormatChange(event.target.value as FormatPreference)
-                }
-                value={selectedFormatPreference}
+          <div className="relative" ref={exportMenuRef}>
+            <button
+              className="inline-flex items-center gap-2 rounded-[0.8rem] border border-border bg-white/[0.03] px-3 py-2 text-[0.82rem] text-muted-strong transition hover:border-border-strong hover:bg-white/[0.05] disabled:cursor-not-allowed disabled:opacity-45"
+              disabled={!selectedJob || isProcessing}
+              onClick={() => setExportMenuOpen((current) => !current)}
+              type="button"
+            >
+              <span className="text-white/55">Export</span>
+              <span className="min-w-[7rem] rounded-[0.6rem] border border-white/10 bg-white/[0.04] px-3 py-1.5 text-left font-medium text-text">
+                {formatOptions.find(
+                  (format) => format.value === selectedFormatPreference
+                )?.label ?? "Original"}
+              </span>
+              <span
+                className={`text-[0.72rem] text-white/45 transition ${exportMenuOpen ? "rotate-180" : ""}`}
               >
-                {formatOptions.map((format) => (
-                  <option
-                    className="bg-[#090909] text-text"
-                    key={format.value}
-                    value={format.value}
-                  >
-                    {format.label}
-                  </option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[0.72rem] text-white/45">
                 ▾
               </span>
-            </span>
-          </label>
+            </button>
+
+            <div
+              className={`absolute top-[calc(100%+0.45rem)] right-0 z-20 w-[13rem] origin-top-right rounded-[0.9rem] border border-border bg-[#0d0d0d]/96 p-1.5 shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl transition duration-200 ${exportMenuOpen ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0"}`}
+            >
+              {formatOptions.map((format) => {
+                const active = format.value === selectedFormatPreference;
+
+                return (
+                  <button
+                    className={`flex w-full items-center justify-between rounded-[0.65rem] px-3 py-2 text-left text-[0.84rem] transition ${
+                      active
+                        ? "bg-emerald-400/10 text-emerald-200"
+                        : "text-text hover:bg-white/6"
+                    }`}
+                    key={format.value}
+                    onClick={() => handleTopFormatChange(format.value)}
+                    type="button"
+                  >
+                    <span className="font-medium">{format.label}</span>
+                    {active ? (
+                      <span className="text-[0.72rem] text-emerald-300">
+                        Active
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <button
             className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-[0.55rem] border border-border bg-white/4 px-3 py-1.5 font-medium text-[0.82rem] text-muted-strong hover:border-border-strong hover:bg-white/8 disabled:cursor-not-allowed disabled:opacity-45"
             disabled={!hasJobs || isProcessing}
