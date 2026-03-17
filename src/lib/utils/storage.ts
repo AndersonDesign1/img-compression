@@ -1,6 +1,6 @@
 import type { CompressionSettings, FormatPreference } from "./types";
 
-const STORAGE_KEY = "pixelpress:last-settings:v3";
+const STORAGE_KEY = "pixelpress:last-settings:v4";
 const validFormats: FormatPreference[] = [
   "original",
   "jpeg",
@@ -38,7 +38,16 @@ export function loadSettings(): CompressionSettings | null {
       return null;
     }
     const parsed = JSON.parse(raw) as unknown;
-    return isValidSettings(parsed) ? parsed : null;
+    if (!isValidSettings(parsed)) {
+      return null;
+    }
+
+    return {
+      ...parsed,
+      format: "original",
+      lossless: false,
+      pngMode: "lossless",
+    };
   } catch {
     return null;
   }

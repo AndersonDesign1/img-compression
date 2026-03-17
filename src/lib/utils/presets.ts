@@ -45,9 +45,9 @@ export const presets: CompressionPreset[] = [
     description: "Keep PNG output but quantize colors for much better savings.",
     settings: {
       format: "png",
-      quality: 86,
+      quality: 78,
       lossless: true,
-      pngColors: 256,
+      pngColors: 128,
       pngMode: "compressed",
     },
   },
