@@ -15,6 +15,33 @@ async function encodeToPng(imageData: ImageData): Promise<ArrayBuffer> {
   return encode(imageData);
 }
 
+async function quantizePng(
+  imageData: ImageData,
+  quality: number,
+  colors: number
+) {
+  const { Imagequant } = await import("imagequant");
+  const instance = new Imagequant();
+  const image = Imagequant.new_image(
+    new Uint8Array(imageData.data.buffer.slice(0)),
+    imageData.width,
+    imageData.height,
+    0
+  );
+
+  try {
+    instance.set_max_colors(colors);
+    instance.set_quality(Math.max(0, quality - 10), quality);
+    instance.set_speed(4);
+
+    const output = instance.process(image);
+    return Uint8Array.from(output).buffer;
+  } finally {
+    image.free();
+    instance.free();
+  }
+}
+
 async function optimisePng(
   pngData: ArrayBuffer | ImageData
 ): Promise<ArrayBuffer> {
@@ -39,6 +66,10 @@ export async function compressImageData(
     } catch {
       return encodeToPng(imageData);
     }
+  }
+
+  if (strategy === "png-quantized") {
+    return quantizePng(imageData, settings.quality, settings.pngColors);
   }
 
   if (strategy === "png-encode-fallback" || format === "png") {

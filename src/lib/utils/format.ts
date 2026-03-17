@@ -53,6 +53,10 @@ export function variantFormatLabel(
     return "Optimized PNG";
   }
 
+  if (strategy === "png-quantized") {
+    return "Compressed PNG";
+  }
+
   if (strategy === "png-encode-fallback") {
     return "PNG export";
   }
@@ -137,6 +141,8 @@ export function settingsSignature(
   return JSON.stringify({
     format: settings.format,
     lossless: settings.lossless,
+    pngColors: settings.pngColors,
+    pngMode: settings.pngMode,
     presetId,
     quality: settings.quality,
     strategy,
@@ -148,11 +154,15 @@ export function buildSettingsForFormat(
   format: FormatPreference
 ): CompressionSettings {
   let lossless = false;
+  let pngMode = settings.pngMode;
 
   if (format === "png") {
     lossless = true;
+    pngMode = "lossless";
   } else if (format === "webp") {
     lossless = settings.lossless;
+  } else if (format === "original") {
+    pngMode = "lossless";
   }
 
   return {
@@ -160,5 +170,6 @@ export function buildSettingsForFormat(
     format,
     quality: format === "png" ? 100 : settings.quality,
     lossless,
+    pngMode,
   };
 }

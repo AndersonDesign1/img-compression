@@ -1,6 +1,6 @@
 import type { CompressionSettings, FormatPreference } from "./types";
 
-const STORAGE_KEY = "pixelpress:last-settings:v2";
+const STORAGE_KEY = "pixelpress:last-settings:v3";
 const validFormats: FormatPreference[] = [
   "original",
   "jpeg",
@@ -20,7 +20,11 @@ function isValidSettings(value: unknown): value is CompressionSettings {
     candidate.quality <= 100 &&
     typeof candidate.format === "string" &&
     validFormats.includes(candidate.format as FormatPreference) &&
-    typeof candidate.lossless === "boolean"
+    typeof candidate.lossless === "boolean" &&
+    (candidate.pngMode === "lossless" || candidate.pngMode === "compressed") &&
+    typeof candidate.pngColors === "number" &&
+    candidate.pngColors >= 2 &&
+    candidate.pngColors <= 256
   );
 }
 

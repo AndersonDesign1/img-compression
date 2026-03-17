@@ -3,14 +3,19 @@ export type FormatPreference = "original" | OutputFormat;
 export type CompressionStrategy =
   | "same-format"
   | "png-optimize"
+  | "png-quantized"
   | "png-encode-fallback"
   | "webp-lossless"
   | "webp-lossy"
   | "avif-lossy";
 
+export type PngMode = "lossless" | "compressed";
+
 export interface CompressionSettings {
   format: FormatPreference;
   lossless: boolean;
+  pngColors: number;
+  pngMode: PngMode;
   quality: number;
 }
 

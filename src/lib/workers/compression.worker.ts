@@ -168,14 +168,34 @@ async function encodeForStrategy(
   const imageData = bitmapToImageData(bitmap);
   bitmap.close();
 
-  const bytesBuffer = await compressImageData(
-    imageData,
-    {
-      ...settings,
-      format: outputFormat,
-    },
-    strategy
-  );
+  let bytesBuffer: ArrayBuffer;
+
+  try {
+    bytesBuffer = await compressImageData(
+      imageData,
+      {
+        ...settings,
+        format: outputFormat,
+      },
+      strategy
+    );
+  } catch (error) {
+    if (strategy !== "png-quantized") {
+      throw error;
+    }
+
+    note =
+      "Compressed PNG fell back to a lossless PNG export after quantization failed.";
+    bytesBuffer = await compressImageData(
+      imageData,
+      {
+        ...settings,
+        format: "png",
+        pngMode: "lossless",
+      },
+      "png-encode-fallback"
+    );
+  }
 
   return { bytesBuffer, note, outputFormat, outputStage };
 }
