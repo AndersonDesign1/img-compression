@@ -16,7 +16,7 @@ export default defineConfig({
   }),
   server: {
     host: true,
-    port: process.env.PORT || 4321,
+    port: Number(process.env.PORT) || 4321,
   },
   vite: {
     plugins: [tailwindcss(), wasm()],
